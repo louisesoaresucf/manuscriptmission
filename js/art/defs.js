@@ -20,6 +20,15 @@ export const P = {
   white: '#fbf8ef',
   tan: '#d6a76b',
   tanDark: '#a8773e',
+  violet: '#5e4592',
+  lavender: '#9a86cf',
+  pink: '#e7a3b5',
+  skin: '#f0cfae',
+  stone: '#8d8576',
+  stoneLight: '#bdb4a2',
+  stoneDark: '#5f584c',
+  sage: '#86a08c',
+  sky: '#9cc0e6',
   gold: 'url(#mm-gold)',
   goldV: 'url(#mm-gold-v)',
   goldPale: '#f7e08a',
@@ -109,4 +118,15 @@ export function rays(cx, cy, r1, r2, count, attrs) {
     s += `<line x1="${(cx + r1 * Math.cos(a)).toFixed(2)}" y1="${(cy + r1 * Math.sin(a)).toFixed(2)}" x2="${(cx + r2 * Math.cos(a)).toFixed(2)}" y2="${(cy + r2 * Math.sin(a)).toFixed(2)}" ${attrs}/>`;
   }
   return s;
+}
+
+// A thick outlined stroke (tails, stems, necks): ink underlay then colour.
+export function tube(d, color, w = 3) {
+  return `<path d="${d}" fill="none" stroke="${P.ink}" stroke-width="${w + 2.6}" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `<path d="${d}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+
+// Gold-dotted halo used behind every element emblem.
+export function halo(cx = 50, cy = 50, r = 40, disc = 'url(#mm-halo)') {
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${disc}"/>` + dotRing(cx, cy, r + 1.5, Math.round(r * 1.05), 1.15);
 }
