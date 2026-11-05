@@ -1,0 +1,140 @@
+/* Manuscript Mission: parchment theme */
+:root {
+  --lapis: #1f3a8a;
+  --vermilion: #b8322a;
+  --verdigris: #2f7d5b;
+  --ochre: #c8902e;
+  --parchment: #f1e4c3;
+  --parchment-dark: #e2cf9f;
+  --vellum: #f8f1de;
+  --ink: #2a1c10;
+  --ink-soft: #5a4630;
+  --gold: #c9a227;
+  --gold-pale: #f7e08a;
+  --font-title: 'UnifrakturMaguntia', 'Old English Text MT', 'Times New Roman', serif;
+  --font-body: 'IM Fell English', 'Iowan Old Style', Georgia, serif;
+  --gutter: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--parchment);
+  background-image:
+    radial-gradient(ellipse at center, rgba(255, 250, 230, 0.6) 0%, rgba(241, 228, 195, 0) 60%),
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, rgba(120, 80, 30, 0.25) 100%);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-title);
+  font-weight: 400;
+  color: var(--vermilion);
+  margin: 0 0 0.3em;
+  line-height: 1.1;
+}
+
+/* Illuminated drop initial */
+.initial {
+  float: left;
+  font-family: var(--font-title);
+  font-size: 3.2em;
+  line-height: 0.9;
+  color: var(--gold-pale);
+  background: var(--lapis);
+  border: 3px solid var(--gold);
+  padding: 0.08em 0.14em 0.12em;
+  margin: 0.08em 0.15em 0 0;
+  box-shadow: inset 0 0 0 2px var(--vermilion);
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  color: var(--vellum);
+  background: var(--vermilion);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px var(--gold), 0 4px 0 3px var(--ink);
+  padding: 0.55em 1.6em;
+  min-height: 48px;
+  cursor: pointer;
+}
+.btn:active { transform: translateY(2px); box-shadow: 0 0 0 3px var(--gold), 0 2px 0 3px var(--ink); }
+.btn:focus-visible { outline: 3px dashed var(--lapis); outline-offset: 6px; }
+
+/* ---------- Gallery (art review page) ---------- */
+.gallery {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px var(--gutter) 48px;
+}
+.gallery header { text-align: center; margin-bottom: 24px; }
+.gallery header h1 { font-size: clamp(2.2rem, 7vw, 3.4rem); }
+.gallery header p { color: var(--ink-soft); margin: 0; }
+.gallery h2 { font-size: 1.9rem; margin-top: 32px; border-bottom: 2px solid var(--gold); padding-bottom: 4px; }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: var(--vellum);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px var(--gold), 0 0 0 6px var(--ink);
+  padding: 14px 16px 16px;
+  margin: 6px;
+}
+.card svg { width: 100%; height: auto; aspect-ratio: 1; display: block; }
+.card h3 { font-size: 1.7rem; margin-top: 8px; }
+.card .tag { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--lapis); }
+.card p { margin: 6px 0 0; font-size: 1rem; }
+
+.books {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+.books figure { margin: 0; text-align: center; }
+.books svg { width: 150px; height: auto; aspect-ratio: 100 / 130; display: block; }
+.books figcaption { font-family: var(--font-title); font-size: 1.4rem; color: var(--ink); }
+
+.small-test {
+  background: var(--parchment-dark);
+  border: 2px solid var(--ink);
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+}
+.small-test svg { width: 44px; height: 44px; }
+.small-test svg.s64 { width: 64px; height: 64px; }
+
+/* ---------- Title screen ---------- */
+.title-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: calc(24px + env(safe-area-inset-top)) var(--gutter) calc(24px + env(safe-area-inset-bottom));
+  gap: 20px;
+}
+.title-screen h1 { font-size: clamp(2.6rem, 12vw, 5rem); }
+.title-screen .books svg { width: 90px; }
+.title-screen p { max-width: 32em; margin: 0; text-align: left; }
