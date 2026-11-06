@@ -270,6 +270,7 @@ h1, h2, h3 {
 
 .scene-wrap {
   position: relative;
+  overflow: hidden;
   flex: 1;
   min-height: 0;
   background: #3d2513;
@@ -285,6 +286,16 @@ h1, h2, h3 {
   cursor: grab;
 }
 #scene:active { cursor: grabbing; }
+#bake {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  height: 1000px;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+#bake[hidden] { display: none; }
 #relief, #scene-front {
   position: absolute;
   inset: 0;

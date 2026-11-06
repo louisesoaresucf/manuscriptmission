@@ -25,21 +25,51 @@ function prepare(markup) {
 }
 
 const materials = new Map();
+
+// A fine, uneven paint texture (used as a bump map) so pigments look brushed
+// onto a surface rather than printed.
+let paintBump = null;
+function paintTexture() {
+  if (paintBump) return paintBump;
+  const THREE = T();
+  const n = 128, c = document.createElement('canvas');
+  c.width = c.height = n;
+  const g = c.getContext('2d');
+  const img = g.createImageData(n, n);
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      const v = 150 + 40 * Math.sin(x * 0.45 + Math.sin(y * 0.2) * 2) + 30 * (Math.random() - 0.5);
+      const i = (y * n + x) * 4;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 255;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  paintBump = new THREE.CanvasTexture(c);
+  paintBump.wrapS = paintBump.wrapT = THREE.RepeatWrapping;
+  paintBump.repeat.set(0.06, 0.06);
+  return paintBump;
+}
+
+// Physically based materials: gold leaf is real metal that reflects the
+// room's light; pigments are matte paint; ink is a satin line.
 function material(hex, opacity, kind) {
   const key = `${hex}|${opacity}|${kind}`;
   if (materials.has(key)) return materials.get(key);
   const THREE = T();
   const transparent = opacity < 0.999;
+  const lin = (h) => new THREE.Color(h).convertSRGBToLinear();
   let m;
   if (kind === 'halo') {
-    m = new THREE.MeshBasicMaterial({ color: '#ffe8a0', transparent: true, opacity: 0.35 * opacity, depthWrite: false, side: THREE.DoubleSide });
+    m = new THREE.MeshBasicMaterial({ color: lin('#ffe8a0'), transparent: true, opacity: 0.35 * opacity, depthWrite: false, side: THREE.DoubleSide });
   } else if (GOLDS.has(hex)) {
-    const base = { [GOLD]: '#b8902e', '#c9a227': '#b8902e', '#e6c65a': '#c9a446', '#f7e08a': '#e2c878', '#8a6a12': '#7a5a14' }[hex] || hex;
-    m = new THREE.MeshPhongMaterial({ color: base, specular: '#ffe9a8', shininess: 55, emissive: '#1c1203', side: THREE.DoubleSide, transparent, opacity });
+    const base = { [GOLD]: '#e6c35e', '#c9a227': '#e0bb52', '#e6c65a': '#ecd070', '#f7e08a': '#f5e2a0', '#8a6a12': '#a8822a' }[hex] || hex;
+    m = new THREE.MeshStandardMaterial({ color: lin(base), metalness: 0.9, roughness: 0.34, side: THREE.DoubleSide, transparent, opacity });
   } else if (hex === INK) {
-    m = new THREE.MeshPhongMaterial({ color: INK, specular: '#000000', shininess: 4, side: THREE.DoubleSide, transparent, opacity });
+    // Ink stays crisp and dark whatever the lighting.
+    m = new THREE.MeshBasicMaterial({ color: lin('#1e140b'), side: THREE.DoubleSide, transparent, opacity });
   } else {
-    m = new THREE.MeshPhongMaterial({ color: hex, specular: '#2a2418', shininess: 12, side: THREE.DoubleSide, transparent, opacity });
+    m = new THREE.MeshStandardMaterial({ color: lin(hex), metalness: 0, roughness: 0.72, bumpMap: kind === 'fill' ? paintTexture() : null, bumpScale: 0.35, side: THREE.DoubleSide, transparent, opacity });
   }
   materials.set(key, m);
   return m;
@@ -75,6 +105,13 @@ function normalise(g) {
 }
 
 const templates = new Map();
+
+// Each room gets its own renderer, and materials and geometry don't carry
+// over safely from one renderer to the next, so start each room afresh.
+export function resetModels() {
+  materials.clear();
+  templates.clear();
+}
 
 // Returns a fresh Object3D for the drawing: centred on the origin, 100 units
 // wide, y up, facing the camera along +z. `parts` maps part names to pivots.
@@ -147,7 +184,8 @@ function makeTemplate(markup, depth, step) {
       for (const shape of THREE.SVGLoader.createShapes(path)) {
         const geo = isHalo
           ? new THREE.ShapeGeometry(shape, 6)
-          : new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 6 });
+          // Rounded, bevelled edges so each shape looks sculpted, not cut out.
+          : new THREE.ExtrudeGeometry(shape, { depth, curveSegments: 6, bevelEnabled: true, bevelThickness: 0.9, bevelSize: 0.45, bevelOffset: -0.45, bevelSegments: 1 });
         geo.translate(0, 0, isHalo ? -1 : z);
         add(part, material(hex, fillOpacity, isHalo ? 'halo' : 'fill'), geo);
       }
