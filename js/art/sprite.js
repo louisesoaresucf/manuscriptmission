@@ -2,6 +2,7 @@
 // as a <symbol>. Anything on the page can then draw an item with
 // <svg><use href="#item-griffin"/></svg>.
 import { defsMarkup } from './defs.js';
+import { sceneDefs } from './scenery.js';
 import { bookCover, BOOKS } from './ornaments.js';
 import { ITEMS } from '../data/items.js';
 
@@ -21,8 +22,18 @@ export function mountSprite() {
   svg.setAttribute('aria-hidden', 'true');
   // Not display:none, because Chrome drops gradients defined in hidden SVGs.
   svg.setAttribute('style', 'position:absolute;width:0;height:0;overflow:hidden');
-  svg.innerHTML = defsMarkup() + symbols.join('');
+  svg.innerHTML = defsMarkup() + sceneDefs() + symbols.join('') + extraSymbols();
   document.body.prepend(svg);
+}
+
+// Glow used to show the selected item.
+function extraSymbols() {
+  return `<defs><filter id="mm-glow" x="-30%" y="-30%" width="160%" height="160%">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="5" result="thick"/>
+    <feGaussianBlur in="thick" stdDeviation="5" result="blur"/>
+    <feFlood flood-color="#ffe680"/><feComposite in2="blur" operator="in" result="glow"/>
+    <feMerge><feMergeNode in="glow"/><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>`;
 }
 
 export function useMarkup(symbolId, viewBox = '0 0 100 100', cls = '') {
