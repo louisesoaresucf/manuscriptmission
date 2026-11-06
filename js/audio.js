@@ -165,6 +165,8 @@ class Audio {
     const f = (d, o = 1) => noteFreq(d, o);
     switch (kind) {
       case 'roar': this.growl(70, 0.9, 0.5); break;
+      case 'dragonfire': this.growl(65, 0.7, 0.45); setTimeout(() => this.noiseBursts(6, 0.16, 900, 0.3, 'bandpass', true), 550); break;
+      case 'bloom': [0, 2, 4, 7].forEach((d, i) => this.bell(f(d, 2), 0.15 + i * 0.11, 0.06)); this.noiseBursts(2, 0.15, 3500, 0.08, 'highpass'); break;
       case 'screech': this.sweep(1400, 900, 0.35, 'sawtooth', 0.12); break;
       case 'neigh': this.sweep(700, 420, 0.6, 'sawtooth', 0.1, 9); break;
       case 'flap': this.noiseBursts(4, 0.11, 900, 0.25); break;

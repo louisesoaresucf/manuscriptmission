@@ -9,11 +9,17 @@ import { ITEMS } from '../data/items.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+// Effect parts (fire breath, a rolling boulder…) only appear during a 3D
+// reaction, so leave them out of the flat drawings.
+export function restingArt(markup) {
+  return markup.replace(/<g data-part="[^"]*" data-pivot="[^"]*" data-rest="hidden">[\s\S]*?<\/g>/g, '');
+}
+
 export function mountSprite() {
   if (document.getElementById('mm-sprite')) return;
   const symbols = [];
   for (const it of ITEMS) {
-    symbols.push(`<symbol id="item-${it.id}" viewBox="0 0 100 100">${shade(it.draw())}</symbol>`);
+    symbols.push(`<symbol id="item-${it.id}" viewBox="0 0 100 100">${shade(restingArt(it.draw()))}</symbol>`);
   }
   for (const kind of Object.keys(BOOKS)) {
     symbols.push(`<symbol id="book-${kind}" viewBox="0 0 100 130">${shade(bookCover(kind))}</symbol>`);

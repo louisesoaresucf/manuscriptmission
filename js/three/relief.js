@@ -45,12 +45,23 @@ function material(hex, opacity, kind) {
   return m;
 }
 
+// The part a drawn shape belongs to, and the part that one sits inside (so a
+// flower can open on a stem that is itself swaying).
 function partOf(node) {
+  const chain = [];
   for (let n = node; n && n.getAttribute; n = n.parentNode) {
     const p = n.getAttribute('data-part');
-    if (p) return { name: p, pivot: (n.getAttribute('data-pivot') || '50,50').split(',').map(Number) };
+    if (p) {
+      chain.push({
+        name: p,
+        pivot: (n.getAttribute('data-pivot') || '50,50').split(',').map(Number),
+        // Effect parts (fire breath, a rolling boulder…) stay hidden until a reaction shows them.
+        hidden: n.getAttribute('data-rest') === 'hidden',
+      });
+    }
   }
-  return { name: 'body', pivot: [50, 50] };
+  if (!chain.length) return { name: 'body', pivot: [50, 50], hidden: false, parent: null };
+  return { ...chain[0], parent: chain[1]?.name || null };
 }
 
 function normalise(g) {
@@ -81,10 +92,22 @@ export function buildRelief(key, markup, { depth = 4.5, step = 0.24 } = {}) {
   const parts = {};
   for (const [name, p] of tpl) {
     const g = new THREE.Group();
-    g.position.set(p.pivot[0], p.pivot[1], 0);
     for (const { geo, mat } of p.meshes) g.add(new THREE.Mesh(geo, mat));
-    centre.add(g);
+    if (p.hidden) g.scale.setScalar(0.0001);
+    g.userData.pivot = p.pivot; // in drawing units, so effects can spawn there
     parts[name] = g;
+  }
+  // Nest each part in its parent part, positioned relative to the parent's pivot.
+  for (const [name, p] of tpl) {
+    const parent = p.parent && tpl.has(p.parent) ? tpl.get(p.parent) : null;
+    const g = parts[name];
+    if (parent) {
+      g.position.set(p.pivot[0] - parent.pivot[0], p.pivot[1] - parent.pivot[1], 0);
+      parts[p.parent].add(g);
+    } else {
+      g.position.set(p.pivot[0], p.pivot[1], 0);
+      centre.add(g);
+    }
   }
   model.userData.parts = parts;
   model.userData.depth = tpl.depthTotal;
@@ -102,7 +125,7 @@ function makeTemplate(markup, depth, step) {
   const buckets = new Map(); // part -> material -> geometries
   const pivots = new Map();
   const add = (part, mat, geo) => {
-    pivots.set(part.name, part.pivot);
+    pivots.set(part.name, { pivot: part.pivot, hidden: !!part.hidden, parent: part.parent });
     if (!buckets.has(part.name)) buckets.set(part.name, new Map());
     const b = buckets.get(part.name);
     if (!b.has(mat)) b.set(mat, []);
@@ -150,7 +173,8 @@ function makeTemplate(markup, depth, step) {
       const merged = geos.length === 1 ? geos[0] : THREE.BufferGeometryUtils.mergeBufferGeometries(geos, false);
       if (merged) meshes.push({ geo: merged, mat });
     }
-    tpl.set(name, { pivot: pivots.get(name), meshes });
+    const { pivot, hidden, parent } = pivots.get(name);
+    tpl.set(name, { pivot, hidden, parent, meshes });
   }
   tpl.depthTotal = i * step + depth;
   return tpl;

@@ -18,6 +18,69 @@ function radialTexture(inner, outer) {
   return tex;
 }
 
+// ---------- particle textures, drawn once on small canvases ----------
+const textures = new Map();
+function particleTexture(type, colour) {
+  const key = `${type}|${colour || ''}`;
+  if (textures.has(key)) return textures.get(key);
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const radial = (stops) => {
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    stops.forEach(([o, col]) => gr.addColorStop(o, col));
+    g.fillStyle = gr;
+    g.fillRect(0, 0, 64, 64);
+  };
+  if (type === 'spark') radial([[0, 'rgba(255,250,215,1)'], [0.35, 'rgba(255,205,70,0.9)'], [1, 'rgba(255,170,40,0)']]);
+  else if (type === 'flame') radial([[0, 'rgba(255,245,170,1)'], [0.4, 'rgba(255,140,30,0.9)'], [0.8, 'rgba(190,40,20,0.5)'], [1, 'rgba(150,20,10,0)']]);
+  else if (type === 'puff') radial([[0, colour || 'rgba(255,255,255,0.8)'], [1, 'rgba(255,255,255,0)']]);
+  else if (type === 'dust') radial([[0, 'rgba(160,130,90,0.7)'], [1, 'rgba(160,130,90,0)']]);
+  else if (type === 'drop' || type === 'rain') {
+    g.fillStyle = colour || '#7fb3ea';
+    g.strokeStyle = '#1f3a8a';
+    g.lineWidth = 3;
+    g.beginPath();
+    if (type === 'rain') { g.ellipse(32, 32, 5, 22, 0, 0, Math.PI * 2); } else {
+      g.moveTo(32, 6); g.bezierCurveTo(44, 26, 52, 36, 50, 46); g.bezierCurveTo(48, 58, 16, 58, 14, 46); g.bezierCurveTo(12, 36, 20, 26, 32, 6);
+    }
+    g.fill(); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.8)';
+    g.beginPath(); g.ellipse(26, 40, 3, 6, 0.3, 0, Math.PI * 2); g.fill();
+  } else if (type === 'note') {
+    // A quaver drawn as shapes (no font needed): head, stem and flag.
+    g.fillStyle = '#e9c45a';
+    g.strokeStyle = '#2a1c10';
+    g.lineWidth = 3;
+    g.beginPath(); g.ellipse(24, 46, 10, 7, -0.4, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.beginPath(); g.moveTo(33, 44); g.lineTo(33, 8); g.stroke();
+    g.lineWidth = 5; g.strokeStyle = '#2a1c10';
+    g.beginPath(); g.moveTo(33, 9); g.bezierCurveTo(44, 14, 50, 22, 44, 32); g.stroke();
+    g.lineWidth = 2.5; g.strokeStyle = '#e9c45a';
+    g.beginPath(); g.moveTo(33, 9); g.bezierCurveTo(44, 14, 50, 22, 44, 32); g.stroke();
+  } else if (type === 'petal' || type === 'leaf') {
+    g.fillStyle = colour || (type === 'leaf' ? '#5aa37f' : '#d98aa0');
+    g.strokeStyle = '#2a1c10';
+    g.lineWidth = 3;
+    g.beginPath();
+    g.moveTo(32, 6); g.bezierCurveTo(52, 20, 52, 44, 32, 58); g.bezierCurveTo(12, 44, 12, 20, 32, 6);
+    g.fill(); g.stroke();
+    if (type === 'leaf') { g.beginPath(); g.moveTo(32, 10); g.lineTo(32, 54); g.stroke(); }
+  } else if (type === 'star') {
+    g.fillStyle = colour || '#fff6c0';
+    g.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const r = i % 2 ? 7 : 30, a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+      g.lineTo(32 + Math.cos(a) * r, 32 + Math.sin(a) * r);
+    }
+    g.fill();
+  }
+  const tex = new (THREE().CanvasTexture)(c);
+  textures.set(key, tex);
+  return tex;
+}
+const ADDITIVE = new Set(['spark', 'flame', 'star']);
+
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -48,6 +111,10 @@ export class ReliefLayer {
     this.shadowTex = radialTexture('rgba(20,10,0,0.55)', 'rgba(20,10,0,0)');
     this.items = new Map();
     this.tweens = [];
+    this.particles = [];
+    this.pool = [];
+    this.plane = new T.PlaneGeometry(1, 1);
+    this.lastFrame = performance.now();
     this.selected = null;
     this.raf = null;
     this.needsRender = true;
@@ -140,14 +207,22 @@ export class ReliefLayer {
     const parts = e.model.userData.parts;
     const saved = {};
     for (const [name, g] of Object.entries(parts)) saved[name] = { r: g.rotation.clone(), s: g.scale.clone(), p: g.position.clone() };
+    // Effects a reaction can trigger once at a given moment (t from 0 to 1).
+    const fired = new Set();
+    const fx = {
+      at: (t0, key, fn) => { if (!fired.has(key) && fx.t >= t0) { fired.add(key); fn(); } },
+      emit: (opts) => this.emit(e, opts),
+      t: 0,
+    };
     this.tween(e, r.ms, (t) => {
+      fx.t = t;
       for (const [name, g] of Object.entries(parts)) {
         g.rotation.copy(saved[name].r); g.scale.copy(saved[name].s); g.position.copy(saved[name].p);
       }
       e.model.rotation.set(0, 0, 0);
       e.model.position.set(0, 0, 0);
       e.model.scale.set(1, 1, 1);
-      r.play(t, parts, e.model, e);
+      r.play(t, parts, e.model, e, fx);
     }, () => {
       for (const [name, g] of Object.entries(parts)) {
         g.rotation.copy(saved[name].r); g.scale.copy(saved[name].s); g.position.copy(saved[name].p);
@@ -158,6 +233,52 @@ export class ReliefLayer {
       e.glow.visible = this.selected === id;
     }, `react-${id}`);
     return r.sound;
+  }
+
+  // Spawn particles around an item. x, y are in the drawing's own units
+  // (0–100, y down), so effects line up with the artwork.
+  emit(e, { type = 'spark', x = 50, y = 50, n = 8, speed = 30, angle = 90, spread = 60, life = 1, size = 9, gravity = 0, colour, spin = 0, grow = 1 }) {
+    const T = THREE();
+    for (let i = 0; i < n; i++) {
+      let mesh = this.pool.pop();
+      if (!mesh) mesh = new T.Mesh(this.plane, new T.MeshBasicMaterial({ transparent: true, depthWrite: false }));
+      const mat = mesh.material;
+      mat.map = particleTexture(type, colour);
+      mat.blending = ADDITIVE.has(type) ? T.AdditiveBlending : T.NormalBlending;
+      mat.opacity = 1;
+      mat.needsUpdate = true;
+      const a = ((angle + (Math.random() - 0.5) * spread) * Math.PI) / 180;
+      const v = speed * (0.6 + Math.random() * 0.7);
+      mesh.position.set(x - 50 + (Math.random() - 0.5) * 4, 50 - y + (Math.random() - 0.5) * 4, 70);
+      mesh.rotation.set(0, 0, Math.random() * Math.PI * 2);
+      mesh.visible = true;
+      e.holder.add(mesh);
+      this.particles.push({ mesh, holder: e.holder, vx: Math.cos(a) * v, vy: Math.sin(a) * v, age: 0, life: life * (0.7 + Math.random() * 0.6), size: size * (0.7 + Math.random() * 0.6), gravity, spin: spin * (Math.random() - 0.5) * 2, grow, stretch: type === 'rain' });
+    }
+    this.loop();
+  }
+
+  updateParticles(dt) {
+    const alive = [];
+    for (const p of this.particles) {
+      p.age += dt;
+      if (p.age >= p.life) {
+        p.mesh.visible = false;
+        p.holder.remove(p.mesh);
+        this.pool.push(p.mesh);
+        continue;
+      }
+      p.vy -= p.gravity * dt;
+      p.mesh.position.x += p.vx * dt;
+      p.mesh.position.y += p.vy * dt;
+      p.mesh.rotation.z += p.spin * dt;
+      const k = p.age / p.life;
+      const sc = p.size * (1 + (p.grow - 1) * k);
+      p.mesh.scale.set(sc, p.stretch ? sc * 1.8 : sc, 1);
+      p.mesh.material.opacity = 1 - k * k;
+      alive.push(p);
+    }
+    this.particles = alive;
   }
 
   // Move an item to a new spot. style: 'sweep' (slides and tumbles along the
@@ -204,11 +325,15 @@ export class ReliefLayer {
 
   loop() {
     if (this.raf) return;
+    if (!this.tweens.length && !this.selected && !this.particles.length) this.lastFrame = performance.now();
     this.raf = requestAnimationFrame((now) => this.frame(now));
   }
 
   frame(now) {
     this.raf = null;
+    const dt = Math.min(0.05, (now - this.lastFrame) / 1000);
+    this.lastFrame = now;
+    if (this.particles.length) this.updateParticles(dt);
     const active = [];
     for (const tw of this.tweens) {
       const t = Math.min(1, (now - tw.t0) / tw.ms);
@@ -225,7 +350,7 @@ export class ReliefLayer {
       }
     }
     this.render();
-    if (this.tweens.length || this.selected) this.loop();
+    if (this.tweens.length || this.selected || this.particles.length) this.loop();
   }
 
   render() {
