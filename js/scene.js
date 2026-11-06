@@ -6,6 +6,7 @@ import { itemById } from './data/items.js';
 import { hasWebGL } from './three/relief.js';
 import { ReliefLayer } from './three/layer.js';
 import { reactionFor } from './three/reactions.js';
+import { bakeRoom } from './realism.js';
 
 const MIN_HIT_PX = 26; // minimum hit radius in screen px (≈52px target)
 
@@ -24,6 +25,7 @@ export class Scene {
     this.room = room;
     this.use3D = hasWebGL() && !window.__mmForce2D;
     const { back: backArt, front: frontArt } = room.scene();
+    this.backArt = backArt;
     this.items = new Map(room.items.map((p) => [p.id, { ...p, found: false }]));
     const itemMarkup = this.use3D ? '' : room.items.map((p) => this.svgItem(p)).join('');
     back.innerHTML = `
@@ -55,11 +57,17 @@ export class Scene {
   // Called once the viewport exists, so the 3D camera can follow it.
   attach(viewport) {
     this.vp = viewport;
+    viewport.onChange = () => { this.layer?.moving(); this.placeBake(); };
+    this.bake();
     if (!this.use3D) return;
     try {
+      // A fresh canvas (and so a fresh WebGL context) for every room: a new
+      // renderer on an old context inherits its leftover drawing state.
+      const fresh = this.canvas.cloneNode(false);
+      this.canvas.replaceWith(fresh);
+      this.canvas = fresh;
       this.layer = new ReliefLayer(this.canvas, viewport, { tone: this.room.vignette ? 'night' : 'day' });
       for (const it of this.items.values()) this.layer.add(it, modelMarkup(it.id));
-      viewport.onChange = () => this.layer.invalidate();
     } catch (err) {
       // Fall back to flat illustrations if 3D setup fails on this device.
       console.warn('3D unavailable, using flat illustrations', err);
@@ -71,7 +79,32 @@ export class Scene {
   }
 
   destroy() {
+    this.destroyed = true;
     this.layer?.destroy();
+    if (this.bakeEl) { this.bakeEl.hidden = true; this.bakeEl.width = this.bakeEl.height = 1; }
+  }
+
+  // Swap the vector scenery for a realistic, pre-rendered picture of it.
+  // If that fails (an old browser, low memory), the vector scenery stays.
+  async bake() {
+    const el = document.getElementById('bake');
+    if (!el || window.__mmNoBake) return;
+    try {
+      await bakeRoom(this.room, this.backArt, el);
+      if (this.destroyed) return;
+      this.bakeEl = el;
+      el.hidden = false;
+      this.svg.querySelector('.back').style.display = 'none';
+      this.placeBake();
+    } catch (err) {
+      console.warn('Realistic room rendering unavailable', err);
+    }
+  }
+
+  placeBake() {
+    const el = this.bakeEl, vp = this.vp;
+    if (!el || !vp) return;
+    el.style.transform = `translate(${vp.tx.toFixed(2)}px, ${vp.ty.toFixed(2)}px) scale(${vp.s.toFixed(5)})`;
   }
 
   get width() { return SCENE_W; }

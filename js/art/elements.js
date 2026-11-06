@@ -60,17 +60,21 @@ export function wave() {
   return `
   ${halo(50, 50, 40)}
   <g ${OUTLINE}>
+    <g data-part="crest" data-pivot="20,82">
     <path d="M8,80 C14,56 30,30 56,26 C76,23 90,36 88,50 C86,62 72,66 66,58 C62,52 66,44 72,46 C68,40 56,40 50,50 C44,60 46,72 54,80 Z" fill="${P.lapis}"/>
+    </g>
     <path d="M12,92 C10,84 14,80 20,80 L88,80 C92,82 92,90 88,92 Z" fill="${P.lapisDark}"/>
   </g>
+  <g data-part="crest" data-pivot="20,82">
   <path d="M18,72 C24,54 36,38 54,33 M58,31 C70,29 82,36 82,46" fill="none" stroke="${P.lapisLight}" stroke-width="2.5" stroke-linecap="round"/>
   <!-- foam curls -->
   <g fill="${P.white}" ${OUTLINE} stroke-width="1">
     <circle cx="74" cy="52" r="3.4"/><circle cx="82" cy="50" r="3"/><circle cx="86" cy="43" r="2.8"/>
     <circle cx="85" cy="35" r="2.6"/><circle cx="79" cy="29" r="2.4"/>
   </g>
+  </g>
   <path d="M22,86 q5,-3 10,0 q5,3 10,0 q5,-3 10,0 q5,3 10,0 q5,-3 10,0 q5,3 10,0" fill="none" stroke="${P.white}" stroke-width="1.3" stroke-linecap="round"/>
-  <path d="M26,74 q4,-3 8,0 M34,62 q4,-3 8,0" ${HILITE}/>`;
+  <g data-part="crest" data-pivot="20,82"><path d="M26,74 q4,-3 8,0 M34,62 q4,-3 8,0" ${HILITE}/></g>`;
 }
 
 export function fountain() {
@@ -118,7 +122,9 @@ export function mountain() {
   <path d="M63,54 C66,52 69,53 70,56 M58,68 C63,65 70,66 73,70 M56,80 C62,77 72,78 76,82" fill="none" stroke="${P.ink}" stroke-width="1.6" stroke-linecap="round"/>
   <path d="M29,42 L22,60 M65,48 L60,60 M51,18 L46,36" ${HILITE} stroke-width="1.6"/>
   <!-- snowy cap -->
-  <path d="M47.5,18 C49,13 55,13 56.5,18 L54,22 L52,19 L50,22 Z" fill="${P.white}" ${OUTLINE} stroke-width="1.2"/>`;
+  <path d="M47.5,18 C49,13 55,13 56.5,18 L54,22 L52,19 L50,22 Z" fill="${P.white}" ${OUTLINE} stroke-width="1.2"/>
+  <!-- a boulder that rolls down the slope, hidden until the mountain rumbles -->
+  <g data-part="boulder" data-pivot="56,30" data-rest="hidden"><circle cx="56" cy="30" r="5.5" fill="${P.stone}" ${OUTLINE} stroke-width="1.4"/><path d="M53,28 l3,2 l2,-3" fill="none" stroke="${P.stoneDark}" stroke-width="0.9"/></g>`;
 }
 
 export function gemstone() {

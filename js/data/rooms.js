@@ -20,9 +20,8 @@ function scriptorium() {
     ${S.bookcase(560, 140, 480, 600, 4, r, [[0, 300, 4], [1, 0, 2], [2, 220, 3], [3, 330, 3]])}
     ${S.lectern(1090, 500)}
     ${S.desk(190, 560)}
-    ${S.lightPool(420, 900, 170, 45, '#e8c35a', 0.3)}
-    ${S.lightPool(330, 850, 90, 26, '#b8322a', 0.2)}
-    ${S.lightPool(1170, 900, 170, 45, '#2b4fa8', 0.2)}
+    ${S.lightPool(420, 900, 180, 48, '#fff1c8', 0.32)}
+    ${S.lightPool(1170, 900, 180, 48, '#fff1c8', 0.28)}
     ${S.floorClutter(r, 60, 1520, 790, 950, 16)}
     ${S.stool(500, 800, -75)}
     ${S.inkpot(560, 820, true)}
@@ -74,6 +73,7 @@ function towerArchive() {
     ${S.archWindow(1360, 170, 150, 360, true)}
     <g fill="#f7e08a"><circle cx="1395" cy="270" r="3"/><circle cx="1470" cy="380" r="2.5"/><circle cx="1410" cy="440" r="2"/></g>
     <rect x="0" y="0" width="1600" height="1000" fill="#0e0818" opacity="0.4"/>
+    ${S.towerDoor(320, 250, 104, 136)}
     ${S.staircase(40, 740, 8, 170, 70)}
     <rect x="0" y="0" width="1600" height="1000" fill="#0e0818" opacity="0.18"/>
     ${S.torch(490, 470)}
@@ -112,6 +112,13 @@ export const ROOMS = [
     done: 'The Scriptorium is restored! But the witch’s magic still swirls through the Reading Hall…',
     stars: [150, 300],
     villain: 'broom',
+    // Realistic light for the pre-rendered room (see js/realism.js).
+    realism: {
+      floorY: 760,
+      lights: [[260, 360, 420, '255,243,208', 0.32], [1340, 360, 420, '255,243,208', 0.3], [800, 500, 700, '255,236,200', 0.12]],
+      shafts: [[[[195, 560], [345, 560], [560, 1000], [255, 1000]]], [[[1255, 560], [1425, 560], [1310, 1000], [1040, 1000]]]],
+      vignette: 0.45,
+    },
     scene: scriptorium,
     // Other places where escaped illustrations can end up when moved.
     spots: [
@@ -141,6 +148,12 @@ export const ROOMS = [
     done: 'The Reading Hall is in order again! Only the Tower Archive remains, where the witch’s spell is strongest…',
     stars: [180, 360],
     villain: 'owl',
+    realism: {
+      floorY: 780,
+      lights: [[800, 250, 480, '255,233,190', 0.28], [610, 430, 300, '255,176,80', 0.4], [990, 430, 300, '255,176,80', 0.4]],
+      shafts: [[[[690, 400], [910, 400], [1060, 1000], [560, 1000]], '255,226,190', 0.2]],
+      vignette: 0.5,
+    },
     scene: readingHall,
     spots: [
       [300, 885], [600, 905], [880, 925], [1250, 885], [1390, 945], [650, 580],
@@ -170,6 +183,12 @@ export const ROOMS = [
     stars: [210, 420],
     vignette: true,
     villain: 'witch',
+    realism: {
+      floorY: 800,
+      lights: [[490, 420, 360, '255,150,60', 0.5], [1290, 280, 320, '255,150,60', 0.45], [320, 240, 170, '255,190,90', 0.45], [1435, 350, 260, '160,180,255', 0.22], [800, 905, 380, '181,140,240', 0.25]],
+      shafts: [[[[1372, 540], [1508, 540], [1290, 1000], [1110, 1000]], '170,190,255', 0.16]],
+      vignette: 0.6,
+    },
     scene: towerArchive,
     spots: [
       [300, 905], [560, 885], [860, 935], [1250, 905], [1480, 925], [150, 575],

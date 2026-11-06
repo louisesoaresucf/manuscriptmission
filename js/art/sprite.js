@@ -9,15 +9,29 @@ import { ITEMS } from '../data/items.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+// Effect parts (fire breath, a rolling boulder…) only appear during a 3D
+// reaction, so leave them out of the flat drawings.
+export function restingArt(markup) {
+  return markup.replace(/<g data-part="[^"]*" data-pivot="[^"]*" data-rest="hidden">[\s\S]*?<\/g>/g, '');
+}
+
 export function mountSprite() {
   if (document.getElementById('mm-sprite')) return;
   const symbols = [];
   for (const it of ITEMS) {
-    symbols.push(`<symbol id="item-${it.id}" viewBox="0 0 100 100">${shade(it.draw())}</symbol>`);
+    symbols.push(`<symbol id="item-${it.id}" viewBox="0 0 100 100">${shade(restingArt(it.draw()))}</symbol>`);
   }
   for (const kind of Object.keys(BOOKS)) {
     symbols.push(`<symbol id="book-${kind}" viewBox="0 0 100 130">${shade(bookCover(kind))}</symbol>`);
   }
+  // The cover roundel: the three manuscripts in a ring of gold.
+  symbols.push(`<symbol id="book-roundel" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="47" fill="#3a0f0a" stroke="#c9a227" stroke-width="4"/>
+    <circle cx="50" cy="50" r="40" fill="none" stroke="#f0d77a" stroke-width="1.5" stroke-dasharray="0.1 4.5" stroke-linecap="round"/>
+    <use href="#book-bestiary" x="10" y="30" width="28" height="36"/>
+    <use href="#book-alchemy" x="36" y="22" width="28" height="36"/>
+    <use href="#book-herbarium" x="62" y="30" width="28" height="36"/>
+  </symbol>`);
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.id = 'mm-sprite';
   svg.setAttribute('aria-hidden', 'true');

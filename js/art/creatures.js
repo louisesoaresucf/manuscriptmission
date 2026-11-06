@@ -92,15 +92,15 @@ export function unicorn() {
   </g>
   <!-- far legs -->
   ${tube('M70,66 C74,74 74,80 73,87', P.stoneLight, 4.5)}
-  ${tube('M41,50 C35,46 31,42 28,40 C26,42 23,44 20,44', P.stoneLight, 4)}
+  <g data-part="legF2" data-pivot="41,50">${tube('M41,50 C35,46 31,42 28,40 C26,42 23,44 20,44', P.stoneLight, 4)}${hoof(19, 44, 80)}</g>
   <!-- body, neck and head in one flowing outline -->
   <path d="M14,30 C14,24 18,19 24,16 C28,13 33,12 37,13 C42,15 44,20 44,26 C46,34 50,40 56,44 C64,48 72,54 74,62 C76,70 72,74 66,73 C58,72 50,66 44,62 C40,58 38,52 36,46 C34,40 32,36 28,34 C24,33 20,33 17,33 C15,33 14,32 14,30 Z" fill="${P.white}" ${OUTLINE}/>
   <path d="M36,13 L38.5,4.5 L41,14 Z" fill="${P.white}" ${OUTLINE} stroke-width="1.5"/>
   <path d="M17,33 L17,40.5 L21,33 Z" fill="${P.white}" ${OUTLINE} stroke-width="1.4"/>
   <!-- near legs -->
   ${tube('M62,66 C60,74 59,80 58,87', P.white, 5)}
-  ${tube('M43,55 C37,52 31,50 27,48 C25,52 22,55 19,56', P.white, 4.6)}
-  ${hoof(73, 89)}${hoof(58, 89)}${hoof(18, 57, 60)}${hoof(19, 44, 80)}
+  <g data-part="legF" data-pivot="43,55">${tube('M43,55 C37,52 31,50 27,48 C25,52 22,55 19,56', P.white, 4.6)}${hoof(18, 57, 60)}</g>
+  ${hoof(73, 89)}${hoof(58, 89)}
   <!-- the spiralled golden horn -->
   <path d="M22,17 L8,0.5 L27,14 Z" fill="${P.gold}" ${OUTLINE} stroke-width="1.5"/>
   <path d="M11.5,4 l2.4,-1.4 M14.5,7.5 l3,-1.6 M17.5,11 l3.4,-1.8 M20.5,14.5 l3,-1.6" ${FINE} stroke-width="0.9"/>
@@ -173,6 +173,12 @@ export function dragon() {
   <path d="M68,12 L77,13" stroke="${P.ink}" stroke-width="1.4" stroke-linecap="round"/>
   <circle cx="88.5" cy="16.5" r="0.7" fill="${P.ink}"/>
   </g>
+  <!-- fire breath, hidden until the dragon roars -->
+  <g data-part="fire" data-pivot="88,22" data-rest="hidden">
+    <path d="M88,20 C96,13 108,10 122,4 C116,12 122,15 130,16 C120,20 122,24 130,30 C118,30 110,32 116,40 C104,33 96,28 88,25 Z" fill="${P.vermilion}" ${OUTLINE} stroke-width="1.4"/>
+    <path d="M89,21 C97,17 106,15 116,12 C112,17 117,20 122,22 C114,24 112,28 114,32 C106,28 98,26 89,24 Z" fill="${P.ochre}"/>
+    <path d="M90,22 C98,20 104,20 110,20 C106,22 106,24 108,26 C102,25 96,24 90,23.5 Z" fill="${P.goldPale}"/>
+  </g>
   <!-- claws -->
   <path d="M73,55 l3,-1 M73,56 l3,1.5 M72,58 l2,2.5 M69,67 l3,0 M68,68 l2,2.5 M32,92 l-3,1 M46,92 l2,1.5 M65,91 l3,1" ${FINE} stroke-width="1.4"/>
   <!-- golden belly plates and back spines -->
@@ -210,13 +216,14 @@ export function pelican() {
   </g>
   <path d="M30,82 l6,4 M38,83 l5,4 M47,84 l5,3 M56,84 l5,3 M64,83 l5,2 M33,86 l5,-3 M45,87 l5,-4 M58,87 l6,-4" ${FINE}/>
   <!-- chicks reaching up -->
-  <g ${OUTLINE} stroke-width="1.5">
+  <g data-part="chickL" data-pivot="37,80"><g ${OUTLINE} stroke-width="1.5">
     <path d="M32,80 C30,74 33,70 37,70 C41,70 42,74 41,80 Z" fill="${P.white}"/>
-    <path d="M59,80 C58,74 59,70 63,70 C67,70 70,74 68,80 Z" fill="${P.white}"/>
     <path d="M38,71 L42,64 L40,72 Z" fill="${P.ochre}"/>
+  </g><circle cx="36.5" cy="73" r="0.9" fill="${P.ink}"/></g>
+  <g data-part="chickR" data-pivot="63,80"><g ${OUTLINE} stroke-width="1.5">
+    <path d="M59,80 C58,74 59,70 63,70 C67,70 70,74 68,80 Z" fill="${P.white}"/>
     <path d="M62,71 L58,64 L60,72 Z" fill="${P.ochre}"/>
-  </g>
-  <circle cx="36.5" cy="73" r="0.9" fill="${P.ink}"/><circle cx="63.5" cy="73" r="0.9" fill="${P.ink}"/>
+  </g><circle cx="63.5" cy="73" r="0.9" fill="${P.ink}"/></g>
   <!-- drops of blood -->
   <g fill="${P.vermilion}" stroke="${P.ink}" stroke-width="0.6">
     <path d="M49,49 q1.6,2.8 0,3.6 q-1.6,-0.8 0,-3.6 Z"/>
@@ -319,7 +326,7 @@ export function siren() {
     <path d="M79,75 C82,66 90,60 97,61 C93,66 91,70 93,78 C88,75 83,75 79,75 Z" fill="${P.vermilion}"/>
     </g>
     <!-- long golden hair -->
-    <path d="M31,22 C30,9 50,8 50,22 C52,30 56,40 54,50 C50,46 48,40 48,34 L33,34 C32,40 30,46 26,50 C24,42 30,32 31,22 Z" fill="${P.gold}"/>
+    <g data-part="hair" data-pivot="40,16"><path d="M31,22 C30,9 50,8 50,22 C52,30 56,40 54,50 C50,46 48,40 48,34 L33,34 C32,40 30,46 26,50 C24,42 30,32 31,22 Z" fill="${P.gold}"/></g>
     <!-- bodice and arms -->
     <path d="M31,50 C30,42 32,35 37,33 L44,33 C49,35 51,42 50,50 Z" fill="${P.vermilion}"/>
     <path d="M37,29 L37,34 L44,34 L44,29 Z" fill="${P.skin}"/>
@@ -342,6 +349,7 @@ export function siren() {
   <!-- face -->
   <circle cx="38" cy="22.5" r="0.95" fill="${P.ink}"/><circle cx="43.5" cy="22.5" r="0.95" fill="${P.ink}"/>
   <path d="M38.5,26.5 q2.3,1.6 4.5,0" ${FINE}/>
+  <g data-part="mouth" data-pivot="40.7,27" data-rest="hidden"><ellipse cx="40.7" cy="27" rx="1.9" ry="1.6" fill="${P.vermilionDark}" stroke="${P.ink}" stroke-width="0.6"/></g>
   <circle cx="36.5" cy="25" r="1.4" fill="${P.rose}" opacity="0.5"/><circle cx="45" cy="25" r="1.4" fill="${P.rose}" opacity="0.5"/>
   <!-- scales and fin ribs -->
   <g data-part="tail" data-pivot="40,52">
@@ -371,10 +379,10 @@ export function salamander() {
   ${tube('M66,56 C80,52 91,58 88,68 C86,75 76,75 76,69 C76,65 80,64 82,67', P.lapis, 4.5)}
   </g>
   <!-- legs -->
-  ${tube('M28,58 L22,68 M22,68 l-4,0 M22,68 l-2,3 M22,68 l1,3.5', P.lapis, 2.6)}
-  ${tube('M58,59 L64,70 M64,70 l4,0 M64,70 l2,3 M64,70 l-1,3.5', P.lapis, 2.6)}
-  ${tube('M36,52 L32,42 M32,42 l-4,-1 M32,42 l-1,-4 M32,42 l2,-3', P.lapisDark, 2.4)}
-  ${tube('M54,50 L60,41 M60,41 l4,-1 M60,41 l1,-4 M60,41 l-2,-3', P.lapisDark, 2.4)}
+  <g data-part="legA" data-pivot="28,58">${tube('M28,58 L22,68 M22,68 l-4,0 M22,68 l-2,3 M22,68 l1,3.5', P.lapis, 2.6)}</g>
+  <g data-part="legB" data-pivot="58,59">${tube('M58,59 L64,70 M64,70 l4,0 M64,70 l2,3 M64,70 l-1,3.5', P.lapis, 2.6)}</g>
+  <g data-part="legB2" data-pivot="36,52">${tube('M36,52 L32,42 M32,42 l-4,-1 M32,42 l-1,-4 M32,42 l2,-3', P.lapisDark, 2.4)}</g>
+  <g data-part="legA2" data-pivot="54,50">${tube('M54,50 L60,41 M60,41 l4,-1 M60,41 l1,-4 M60,41 l-2,-3', P.lapisDark, 2.4)}</g>
   <g ${OUTLINE}>
     <path d="M21,51 C29,44 48,44 60,47 C67,49 71,53 68,58 C60,62 44,62 30,60 C26,59 21,56 21,51 Z" fill="${P.lapis}"/>
     <path d="M7,51 C8,45 17,44 23,48 L24,56 C19,58 9,57 7,51 Z" fill="${P.lapis}"/>

@@ -27,21 +27,27 @@ export function mandrake() {
     <circle cx="43" cy="12" r="3.2" fill="${P.gold}"/>
     <circle cx="57" cy="12" r="3.2" fill="${P.gold}"/>
   </g>
-  <!-- the root, shaped like a little person -->
-  <path d="M44,35 C40,38 39.5,45 43.5,49 C40,52 34,52 27,48.5 C23,46.5 19,48.5 16,46 C17.5,50 22,52.5 26,53.5 C32,56 38,56.5 41,58.5 C40,64 41,69.5 42,74 C38,80 34,86 29.5,94 L33.5,95 C37,88 42,82 46,78.5 C48,77 52,77 54,78.5 C58,82 63,88 66.5,95 L70.5,94 C66,86 62,80 58,74 C59,69.5 60,64 59,58.5 C62,56.5 68,56 74,53.5 C78,52.5 82.5,50 84,46 C81,48.5 77,46.5 73,48.5 C66,52 60,52 56.5,49 C60.5,45 60,38 56,35 C53,33.5 47,33.5 44,35 Z" fill="${P.tan}" ${OUTLINE}/>
-  <!-- root hairs -->
-  <path d="M16,46 l-4,-2 M17,48 l-5,1 M84,46 l4,-2 M83,48 l5,1 M29.5,94 l-4,3 M31.5,95 l-1,4 M70.5,94 l4,3 M68.5,95 l1,4 M41,66 l-4,1 M59,66 l4,1 M42,71 l-3,3 M58,71 l3,3" ${FINE}/>
+  <!-- the root, shaped like a little person: arms and legs first, body over the joints -->
+  ${part('armL', 42, 52, `<path d="M43,50 C38,51 32,51 27,48.5 C23,46.5 19,48.5 16,46 C17.5,50 22,52.5 26,53.5 C32,56 38,56.5 42,58 Z" fill="${P.tan}" ${OUTLINE}/><path d="M16,46 l-4,-2 M17,48 l-5,1 M33,51 l3,0.5" ${FINE}/><path d="M28,50 C33,52.5 37,53.5 40,54" ${HILITE}/>`)}
+  ${part('armR', 58, 52, `<path d="M57,50 C62,51 68,51 73,48.5 C77,46.5 81,48.5 84,46 C82.5,50 78,52.5 74,53.5 C68,56 62,56.5 58,58 Z" fill="${P.tan}" ${OUTLINE}/><path d="M84,46 l4,-2 M83,48 l5,1 M67,51 l-3,0.5" ${FINE}/>`)}
+  ${part('legL', 45, 74, `<path d="M43,71 C38,80 34,86 29.5,94 L33.5,95 C37,88 42,82 48,77 Z" fill="${P.tan}" ${OUTLINE}/><path d="M29.5,94 l-4,3 M31.5,95 l-1,4 M41,77 l-3,3" ${FINE}/>`)}
+  ${part('legR', 55, 74, `<path d="M57,71 C62,80 66,86 70.5,94 L66.5,95 C63,88 58,82 52,77 Z" fill="${P.tan}" ${OUTLINE}/><path d="M70.5,94 l4,3 M68.5,95 l1,4 M59,77 l3,3" ${FINE}/>`)}
+  <path d="M44,35 C40,38 39.5,45 43.5,49 C41.5,52 41,55 41,58.5 C40,64 41,69.5 42,74 C45,78.5 55,78.5 58,74 C59,69.5 60,64 59,58.5 C59,55 58.5,52 56.5,49 C60.5,45 60,38 56,35 C53,33.5 47,33.5 44,35 Z" fill="${P.tan}" ${OUTLINE}/>
+  <path d="M41,66 l-4,1 M59,66 l4,1" ${FINE}/>
   <!-- face: the mandrake screams when pulled from the earth! -->
   <circle cx="47" cy="41" r="1.3" fill="${P.ink}"/>
   <circle cx="53" cy="41" r="1.3" fill="${P.ink}"/>
   <path d="M45,38 l3,1 M55,38 l-3,1" ${FINE}/>
   <ellipse cx="50" cy="45.5" rx="1.8" ry="2.3" fill="${P.vermilionDark}" stroke="${P.ink}" stroke-width="0.7"/>
   <!-- bark hatching and highlights -->
-  <path d="M45,58 l2,2 M45,63 l2,2 M54,59 l-2,2 M54,64 l-2,2 M47,70 l2,1.5 M53,70 l-2,1.5 M33,51 l3,0.5 M67,51 l-3,0.5" ${FINE}/>
-  <path d="M44.5,49.5 C43.5,56 43.5,64 44.5,72 M28,50 C33,52.5 37,53.5 40,54" ${HILITE}/>
+  <path d="M45,58 l2,2 M45,63 l2,2 M54,59 l-2,2 M54,64 l-2,2 M47,70 l2,1.5 M53,70 l-2,1.5" ${FINE}/>
+  <path d="M44.5,49.5 C43.5,56 43.5,64 44.5,72" ${HILITE}/>
   <path d="M43,37 C42,40 42,44 44,46" ${HILITE}/>
   `;
 }
+
+// Wrap part of a drawing as an animatable piece (see js/three/relief.js).
+const part = (name, x, y, markup) => `<g data-part="${name}" data-pivot="${x},${y}">${markup}</g>`;
 
 // Herbals show the root too: a little tuft of root hairs.
 function roots(x, y, color = P.tanDark) {
@@ -75,11 +81,11 @@ export function rose() {
   ${leaf(14, 5, P.verdigris, 'translate(50,66) rotate(60)')}
   ${leaf(12, 4.5, P.verdigrisLight, 'translate(38,52) rotate(-80)')}
   ${leaf(12, 4.5, P.verdigrisLight, 'translate(62,44) rotate(80)')}
-  ${rosette(50, 24, 15, P.vermilion)}
-  ${rosette(29, 36, 10, P.rose)}
-  ${rosette(71, 26, 10, P.rose)}
+  ${part('bloom1', 50, 24, rosette(50, 24, 15, P.vermilion) + `<g fill="${P.white}"><circle cx="48" cy="22" r="0.8"/><circle cx="52" cy="22" r="0.8"/><circle cx="50" cy="26" r="0.8"/></g>`)}
+  ${part('bloom2', 29, 36, rosette(29, 36, 10, P.rose))}
+  ${part('bloom3', 71, 26, rosette(71, 26, 10, P.rose))}
   <path d="M44,18 q3,-3 6,-2" ${HILITE}/>
-  <g fill="${P.white}"><circle cx="48" cy="22" r="0.8"/><circle cx="52" cy="22" r="0.8"/><circle cx="50" cy="26" r="0.8"/></g>`;
+`;
 }
 
 export function lily() {
@@ -102,9 +108,9 @@ export function lily() {
   ${strap(50, 80, 22, -12, P.verdigris)}
   ${strap(50, 72, -18, -12, P.verdigrisLight)}
   ${strap(50, 66, 18, -12, P.verdigrisLight)}
-  ${bloom(50, 34, 0)}
-  ${bloom(33, 30, -35)}
-  ${bloom(67, 26, 35)}`;
+  ${part('bloom1', 50, 34, bloom(50, 34, 0))}
+  ${part('bloom2', 33, 30, bloom(33, 30, -35))}
+  ${part('bloom3', 67, 26, bloom(67, 26, 35))}`;
 }
 
 export function rosemary() {
@@ -161,12 +167,15 @@ export function sage() {
 export function lavender() {
   const spike = (x0, y0, x1, y1) => {
     let s = tube(`M${x0},${y0} L${x1},${y1}`, P.sage, 1.4);
+    let florets = '';
     for (let i = 0; i < 6; i++) {
       const t = i / 6, x = x1 + (x0 - x1) * t * 0.35, y = y1 + (y0 - y1) * t * 0.35;
-      s += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="3" ry="2.2" fill="${i % 2 ? P.lavender : P.violet}" ${OUTLINE} stroke-width="0.9"/>`;
+      florets += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="3" ry="2.2" fill="${i % 2 ? P.lavender : P.violet}" ${OUTLINE} stroke-width="0.9"/>`;
     }
-    return s;
+    spikes++;
+    return s + part(`bloom${spikes}`, x1, y1 + (y0 - y1) * 0.18, florets);
   };
+  let spikes = 0;
   return `
   ${roots(50, 88)}
   ${strap(50, 86, -24, -14, P.sage, 2)}${strap(50, 86, 24, -14, P.sage, 2)}
@@ -201,7 +210,7 @@ export function columbine() {
   ${lobed('translate(54,84) rotate(40) scale(-1,1)')}
   ${lobed('translate(48,70) rotate(-60) scale(0.8)')}
   ${lobed('translate(52,66) rotate(60) scale(-0.8,0.8)')}
-  ${bell(26, 40)}${bell(74, 38)}${bell(46, 20, 0.95)}`;
+  ${part('bloom1', 26, 40, bell(26, 40))}${part('bloom2', 74, 38, bell(74, 38))}${part('bloom3', 46, 20, bell(46, 20, 0.95))}`;
 }
 
 export function foxglove() {
@@ -211,11 +220,11 @@ export function foxglove() {
     const y = 72 - i * 9, side = i % 2 ? 1 : -1, s = 1 - i * 0.07;
     const x = 50 + side * 4;
     bells += `
-    <g transform="translate(${x},${y}) rotate(${side * 70}) scale(${s})">
+    <g data-part="bloom${i + 1}" data-pivot="${x},${y}"><g transform="translate(${x},${y}) rotate(${side * 70}) scale(${s})">
       <path d="M0,0 C4,-1 12,-3 16,-6 C18,0 18,6 16,8 C12,6 4,3 0,2 Z" fill="${P.rose}" ${OUTLINE} stroke-width="1.3"/>
       <path d="M14,-4 C15,0 15,4 14,6" fill="none" stroke="${P.roseLight}" stroke-width="2"/>
       <circle cx="9" cy="0" r="0.8" fill="${P.vermilionDark}"/><circle cx="12" cy="1.5" r="0.8" fill="${P.vermilionDark}"/>
-    </g>`;
+    </g></g>`;
   }
   return `
   ${roots(50, 88)}
@@ -240,10 +249,9 @@ export function hellebore() {
   ${palm('translate(50,80) rotate(-70)')}
   ${palm('translate(50,80) rotate(70)')}
   ${palm('translate(50,70) rotate(-30) scale(0.8)')}
-  ${rosette(30, 40, 18, P.white, P.goldMid)}
-  ${rosette(70, 38, 18, P.vellum, P.goldMid)}
-  ${rosette(50, 26, 20, P.pink, P.goldMid)}
-  <g fill="${P.verdigrisLight}"><circle cx="50" cy="26" r="2.4"/><circle cx="30" cy="40" r="2"/><circle cx="70" cy="38" r="2"/></g>
+  ${part('bloom1', 30, 40, rosette(30, 40, 18, P.white, P.goldMid) + `<circle cx="30" cy="40" r="2" fill="${P.verdigrisLight}"/>`)}
+  ${part('bloom2', 70, 38, rosette(70, 38, 18, P.vellum, P.goldMid) + `<circle cx="70" cy="38" r="2" fill="${P.verdigrisLight}"/>`)}
+  ${part('bloom3', 50, 26, rosette(50, 26, 20, P.pink, P.goldMid) + `<circle cx="50" cy="26" r="2.4" fill="${P.verdigrisLight}"/>`)}
   <path d="M44,18 q2,-3 5,-3 M24,34 q2,-2 4,-2" fill="none" stroke="${P.rose}" stroke-width="0.9" stroke-linecap="round"/>`;
 }
 
@@ -261,7 +269,7 @@ export function mistletoe() {
   ${tube('M50,80 L50,60 M50,60 L36,44 M50,60 L64,44 M36,44 L26,30 M36,44 L40,26 M64,44 L60,26 M64,44 L74,30', P.verdigrisDark, 1.8)}
   ${pair(26, 30, -30)}${pair(40, 26, 0)}${pair(60, 26, 0)}${pair(74, 30, 30)}
   ${pair(36, 44, -60)}${pair(64, 44, 60)}
-  ${berry(36, 44)}${berry(64, 44)}${berry(50, 60)}${berry(33, 30)}${berry(67, 30)}${berry(50, 30)}`;
+  ${part('berries', 50, 44, berry(36, 44) + berry(64, 44) + berry(50, 60) + berry(33, 30) + berry(67, 30) + berry(50, 30))}`;
 }
 
 export function peony() {
@@ -276,6 +284,7 @@ export function peony() {
   ${cutLeaf('translate(74,58) rotate(70)')}
   ${cutLeaf('translate(50,82) rotate(-30) scale(0.8)')}
   <!-- the big, many-petalled bloom -->
+  <g data-part="bloom1" data-pivot="50,35">
   <g ${OUTLINE} stroke-width="1.5">
     <path d="M26,40 C20,30 26,20 34,22 C34,12 48,8 52,16 C58,8 72,12 70,22 C80,20 84,32 76,40 C80,48 70,54 62,50 C56,56 44,56 38,50 C30,54 20,48 26,40 Z" fill="${P.rose}"/>
     <path d="M34,38 C30,30 36,24 42,26 C44,20 54,20 56,26 C62,22 70,28 66,34 C70,40 64,46 58,44 C54,48 46,48 42,44 C36,46 30,42 34,38 Z" fill="${P.roseLight}"/>
@@ -283,6 +292,7 @@ export function peony() {
   </g>
   <circle cx="50" cy="35.5" r="2.4" fill="${P.gold}" stroke="${P.ink}" stroke-width="0.8"/>
   <path d="M30,30 C30,26 32,24 35,24 M54,16 C58,14 62,14 64,16" ${HILITE}/>
+  </g>
   <!-- a faint glow, for it was said to shine at night -->
   <path d="M18,26 l-4,-2 M16,40 l-5,0 M84,26 l4,-2 M86,40 l5,0 M50,6 l0,-4" stroke="${P.goldMid}" stroke-width="1.5" stroke-linecap="round"/>`;
 }

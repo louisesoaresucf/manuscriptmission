@@ -1,0 +1,256 @@
+/* The manuscript: a leather-bound codex on a scribe's desk. */
+
+.book-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: calc(12px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  /* walnut desk, lit by a candle */
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(255, 200, 120, 0.28), rgba(255, 200, 120, 0) 55%),
+    repeating-linear-gradient(92deg, rgba(0, 0, 0, 0.08) 0 2px, rgba(0, 0, 0, 0) 2px 9px),
+    linear-gradient(180deg, #5a3a1f, #3b2412 60%, #24150a);
+  overflow: hidden;
+}
+
+.book-stage {
+  /* sideways swipes turn pages; vertical scrolling stays with the browser */
+  touch-action: pan-y;
+  perspective: 2400px;
+  perspective-origin: 50% 40%;
+  display: grid;
+  place-items: center;
+}
+.codex.single { overflow: visible; }
+.book-stage.single { overflow: hidden; padding: 4px; }
+
+.codex {
+  position: relative;
+  width: calc(var(--pw) * 2);
+  height: var(--ph);
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.3, 0.1, 0.2, 1);
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.55));
+}
+.codex.single { width: var(--pw); }
+/* Closed, the cover sits in the middle; open, the spread is centred. */
+.codex.spread:not(.opened) { transform: translateX(calc(var(--pw) * -0.5)); }
+
+.leaf {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--pw);
+  height: var(--ph);
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.3, 0.1, 0.2, 1);
+  cursor: pointer;
+}
+.codex.single .leaf { left: 0; }
+.leaf.turned { transform: rotateY(-180deg); }
+.leaf.instant { transition: none; }
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+.face.back { transform: rotateY(180deg); }
+/* The page darkens as it lifts and turns. */
+.leaf.turning .face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to left, rgba(40, 25, 10, 0.35), rgba(40, 25, 10, 0) 55%);
+  animation: page-shade 0.9s ease-in-out;
+  opacity: 0;
+}
+@keyframes page-shade { 50% { opacity: 1; } }
+
+/* ---------- vellum pages ---------- */
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  padding: 9% 10% 11%;
+  font-size: calc(var(--pw) / 21);
+  line-height: 1.5;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 60%),
+    radial-gradient(ellipse at 80% 90%, rgba(150, 110, 60, 0.18), rgba(150, 110, 60, 0) 55%),
+    #f3e7c9;
+}
+/* ruled margins in faded red ink */
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 6% 7% 7%;
+  border: 1px solid rgba(184, 50, 42, 0.32);
+  outline: 1px solid rgba(184, 50, 42, 0.18);
+  outline-offset: 3px;
+  pointer-events: none;
+}
+.page.recto { box-shadow: inset 18px 0 22px -14px rgba(80, 50, 20, 0.55); }
+.page.verso { box-shadow: inset -18px 0 22px -14px rgba(80, 50, 20, 0.55); }
+.codex.single .page { box-shadow: inset 12px 0 18px -12px rgba(80, 50, 20, 0.45); }
+
+/* a painted border strip in the outer margin */
+.vine {
+  position: absolute;
+  top: 9%;
+  bottom: 11%;
+  width: 2.2%;
+  background: repeating-linear-gradient(180deg, #1f3a8a 0 6%, #c9a227 6% 8%, #b8322a 8% 14%, #c9a227 14% 16%);
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px #2a1c10;
+}
+.recto .vine { right: 3.2%; }
+.verso .vine { left: 3.2%; }
+
+.rubric {
+  font-family: var(--font-title);
+  color: var(--vermilion);
+  font-size: 1.45em;
+  line-height: 1.15;
+  text-align: center;
+  margin: 0;
+  text-wrap: balance;
+}
+.rubric .part { font-family: var(--font-body); font-size: 0.55em; color: var(--ink-soft); font-style: italic; }
+.incipit {
+  margin: 0;
+  text-align: justify;
+  hyphens: auto;
+}
+.incipit .initial { font-size: 2.9em; }
+.illumination { margin: 0; }
+.illumination svg { width: 100%; height: auto; display: block; box-shadow: 0 3px 8px rgba(60, 35, 10, 0.35); }
+.art-page { justify-content: center; }
+.text-page { justify-content: center; }
+.folio {
+  position: absolute;
+  bottom: 3.2%;
+  right: 10%;
+  font-size: 0.72em;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.folio.verso { right: auto; left: 10%; }
+
+/* marbled endpapers inside the boards */
+.endpaper {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(31, 58, 138, 0.55) 0 8%, rgba(0, 0, 0, 0) 9%),
+    radial-gradient(circle at 70% 60%, rgba(184, 50, 42, 0.45) 0 10%, rgba(0, 0, 0, 0) 11%),
+    radial-gradient(circle at 45% 85%, rgba(201, 162, 39, 0.5) 0 7%, rgba(0, 0, 0, 0) 8%),
+    radial-gradient(circle at 85% 15%, rgba(47, 125, 91, 0.45) 0 9%, rgba(0, 0, 0, 0) 10%),
+    repeating-radial-gradient(circle at 50% 50%, #e9dcbc 0 6px, #d9c7a0 6px 9px);
+}
+.endpaper::before { display: none; }
+
+/* ---------- the leather cover ---------- */
+.cover .face.front {
+  border-radius: 2px 8px 8px 2px;
+  background:
+    radial-gradient(ellipse at 35% 30%, rgba(255, 170, 120, 0.25), rgba(0, 0, 0, 0) 55%),
+    repeating-radial-gradient(circle at 30% 40%, rgba(0, 0, 0, 0.06) 0 2px, rgba(0, 0, 0, 0) 2px 5px),
+    linear-gradient(135deg, #7a2a1a, #4e170e 55%, #2e0c07);
+  box-shadow: inset 0 0 0 3px #2a0d08, inset 10px 0 18px rgba(0, 0, 0, 0.45);
+  color: #e9c45a;
+}
+.cover-face { position: absolute; inset: 0; }
+.cover-tooling {
+  position: absolute;
+  inset: 7%;
+  border: 3px double #c9a227;
+  box-shadow: inset 0 0 0 6px rgba(0, 0, 0, 0), inset 0 0 0 7px rgba(201, 162, 39, 0.55);
+  display: grid;
+  place-items: center;
+}
+.cover-tooling::before {
+  content: '';
+  position: absolute;
+  inset: 5%;
+  border: 2px dotted rgba(233, 196, 90, 0.75);
+}
+.boss {
+  position: absolute;
+  width: 15%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff1b0, #c9a227 45%, #6e520f);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(80, 60, 10, 0.6);
+}
+.boss::after { content: ''; position: absolute; inset: 38%; border-radius: 50%; background: #5a3a0a; }
+.boss.tl { top: -5%; left: -5%; } .boss.tr { top: -5%; right: -5%; }
+.boss.bl { bottom: -5%; left: -5%; } .boss.br { bottom: -5%; right: -5%; }
+.cover-title { text-align: center; padding: 0 10%; position: relative; }
+.cover-roundel { width: 46%; height: auto; display: block; margin: 0 auto 6%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6)); }
+.cover-title h1 {
+  font-size: calc(var(--pw) / 9);
+  color: #e9c45a;
+  text-shadow: 0 1px 0 #fff3b0, 0 -1px 0 #4a2a05, 0 3px 6px rgba(0, 0, 0, 0.6);
+  margin: 0;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+.cover-sub { margin: 0.6em 0 0; font-style: italic; color: #e2c878; font-size: calc(var(--pw) / 24); }
+.clasp {
+  position: absolute;
+  right: -3%;
+  width: 15%;
+  height: 7%;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f0d77a, #c9a227 50%, #7a5a14);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 0 0 1px #4a3508;
+  transition: transform 0.45s ease-in, opacity 0.45s;
+}
+.clasp.c1 { top: 28%; } .clasp.c2 { top: 65%; }
+.unclasp .clasp { transform: translateX(40%) rotate(-30deg); opacity: 0; }
+.cover-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2.4%;
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+  font-size: calc(var(--pw) / 26);
+  color: #f1dfa0;
+  animation: hint-pulse 2.2s ease-in-out infinite;
+}
+@keyframes hint-pulse { 50% { opacity: 0.45; } }
+.cover .face.back .page { border-radius: 8px 2px 2px 8px; }
+
+/* ---------- collection pages ---------- */
+.collection-page { gap: 0.8em; }
+.collection-page .collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5em;
+}
+.collection-page .col-item {
+  margin: 0;
+  padding: 0.35em 0.2em;
+  font-size: 0.78em;
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.collection-page .col-item svg { max-width: 100%; }
+
+/* ---------- controls under the book ---------- */
+.book-actions { display: flex; gap: 12px; justify-content: center; }
+.book-actions .btn { font-size: 1rem; padding: 0.45em 1.2em; }
+.btn-final { background: var(--verdigris); }
+
+@media (prefers-reduced-motion: reduce) {
+  .leaf, .codex, .clasp { transition-duration: 0.01ms !important; }
+}

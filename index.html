@@ -10,22 +10,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Uncial+Antiqua&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/book.css">
 </head>
 <body>
   <main id="app">
-    <!-- Title -->
-    <section class="screen title-screen active" id="screen-title">
-      <h1>Manuscript Mission</h1>
-      <div class="books" id="title-books"></div>
-      <p><span class="initial">A</span> wicked witch has cast a spell upon the great library! Every book has tumbled from its shelf, and the creatures, elements and plants painted inside have escaped. Find them and return each one to its manuscript.</p>
-      <button class="btn" id="btn-begin" type="button">Begin</button>
-    </section>
-
-    <!-- Story panels (intro and finale) -->
-    <section class="screen story-screen" id="screen-story">
-      <figure class="panel"><svg id="story-art" viewBox="0 0 400 260" role="img" aria-label=""></svg></figure>
-      <p class="story-text" id="story-text"></p>
-      <div class="actions" id="story-actions"></div>
+    <!-- The manuscript: title, story, finale and collection -->
+    <section class="screen book-screen active" id="screen-book" aria-label="The manuscript">
+      <div class="book-stage" id="book-stage">
+        <div class="codex" id="codex"></div>
+      </div>
+      <div class="book-actions">
+        <button class="btn btn-quiet" id="book-prev" type="button" hidden>Back</button>
+        <button class="btn" id="book-next" type="button">Open the manuscript</button>
+      </div>
     </section>
 
     <!-- The game -->
@@ -42,6 +39,7 @@
         </button>
       </header>
       <div class="scene-wrap">
+        <canvas id="bake" aria-hidden="true" hidden></canvas>
         <svg id="scene" aria-label="The library. Search for escaped illustrations."></svg>
         <canvas id="relief" aria-hidden="true"></canvas>
         <svg id="scene-front" aria-hidden="true"></svg>
@@ -65,15 +63,6 @@
       </div>
     </section>
 
-    <!-- Collection of lore -->
-    <section class="screen collection-screen" id="screen-collection">
-      <header class="collection-head">
-        <h2>The Restored Manuscripts</h2>
-        <p id="collection-count"></p>
-      </header>
-      <div id="collection"></div>
-      <div class="actions"><button class="btn" id="btn-collection-back" type="button">Back</button></div>
-    </section>
   </main>
 
   <!-- Modal card: room introduction and lore -->
