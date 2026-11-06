@@ -58,15 +58,26 @@ export function owl(x, y, s = 1, { flying = false } = {}) {
       if (Math.abs(fx) < 16 - r) feathers.push(`M${fx - 2.5},${fy} l2.5,2.2 l2.5,-2.2`);
     }
   }
+  // Flying wings have two jointed segments: the arm (shoulder to wrist) and
+  // the hand (the long primary feathers), so they can bend through a stroke.
   const wing = (side) => flying
     ? `<g class="owl-wing" data-side="${side}" transform="scale(${side},1)">
-        <path d="M8,-50 C26,-74 52,-82 74,-70 C66,-66 70,-60 62,-56 C66,-50 58,-46 52,-44 C54,-38 44,-36 38,-36 C30,-36 18,-40 10,-42 Z" fill="url(#v-owl)" ${OUTLINE} stroke-width="1.8"/>
-        <path d="M22,-60 C34,-66 50,-70 64,-68 M20,-52 C32,-56 46,-56 58,-56 M18,-46 C28,-48 40,-46 50,-44" fill="none" stroke="#4a2e14" stroke-width="1.2"/>
-        <path d="M30,-63 l2,3 M40,-66 l2,3 M50,-67 l2,3 M34,-55 l2,3 M44,-55 l2,3" stroke="#f0d9ae" stroke-width="1.3" stroke-linecap="round"/>
+        <g class="owl-arm" transform="rotate(0 8 -52)">
+          <g class="owl-hand" transform="rotate(0 40 -64)">
+            <path d="M38,-70 C50,-80 66,-84 82,-80 C80,-76 84,-73 82,-70 C84,-66 80,-63 77,-62 C79,-58 74,-55 70,-55 C70,-51 64,-50 60,-51 C56,-50 46,-52 38,-56 Z" fill="url(#v-owl)" ${OUTLINE} stroke-width="1.6"/>
+            <path d="M44,-70 C56,-76 68,-79 80,-78 M44,-64 C56,-68 68,-70 80,-70 M44,-59 C54,-61 64,-62 74,-62 M42,-55 C50,-56 58,-56 66,-55" fill="none" stroke="#4a2e14" stroke-width="1.1"/>
+            <path d="M58,-75 l2,3 M68,-77 l2,3 M60,-67 l2,3 M70,-68 l2,3 M58,-59 l2,3" stroke="#f0d9ae" stroke-width="1.2" stroke-linecap="round"/>
+          </g>
+          <path d="M8,-52 C18,-66 30,-72 42,-70 L42,-54 C34,-50 22,-44 10,-42 Z" fill="url(#v-owl)" ${OUTLINE} stroke-width="1.6"/>
+          <path d="M14,-56 C22,-62 30,-64 38,-64 M14,-49 C22,-52 30,-54 38,-55" fill="none" stroke="#4a2e14" stroke-width="1.1"/>
+          <path d="M20,-60 l2,3 M30,-62 l2,3 M24,-52 l2,3 M33,-55 l2,3" stroke="#f0d9ae" stroke-width="1.2" stroke-linecap="round"/>
+        </g>
       </g>`
     : `<path d="M${side * 12},-50 C${side * 20},-40 ${side * 20},-22 ${side * 14},-6 C${side * 10},-14 ${side * 9},-30 ${side * 8},-44 Z" fill="#6e4726" ${OUTLINE} stroke-width="1.4"/>`;
   return `
   <g transform="translate(${x},${y}) scale(${s})">
+    ${flying ? `<g class="owl-tail"><path d="M-9,-8 L-14,14 C-6,17 6,17 14,14 L9,-8 Z" fill="#6e4726" ${OUTLINE} stroke-width="1.4"/>
+      <path d="M-6,-4 L-8,13 M0,-4 L0,15 M6,-4 L8,13" stroke="#3a220f" stroke-width="1"/></g>` : ''}
     ${wing(-1)}${wing(1)}
     <!-- body -->
     <path d="M0,-58 C17,-58 22,-40 20,-24 C18,-8 10,0 0,0 C-10,0 -18,-8 -20,-24 C-22,-40 -17,-58 0,-58 Z" fill="url(#v-owl)" ${OUTLINE} stroke-width="1.8"/>

@@ -132,7 +132,7 @@ export function wall(fill, floorY = 760, floorFill = 'url(#sc-tiles)') {
 
 export function archWindow(x, y, w, h, night = false) {
   const r = w / 2;
-  const glass = night ? 'url(#sc-glass-night)' : 'url(#sc-glass-jewel)';
+  const glass = night ? 'url(#sc-glass-night)' : 'url(#sc-glass-day)';
   const d = `M${x},${y + h} L${x},${y + r} Q${x},${y} ${x + r},${y - r * 0.35} Q${x + w},${y} ${x + w},${y + r} L${x + w},${y + h} Z`;
   return `
   <path d="${d}" fill="${P.stoneLight}" ${o(4)} transform="translate(0,0)" stroke-width="4"/>
@@ -528,4 +528,44 @@ export function floorClutter(rand, x0, x1, y0, y1, count) {
     else s += page(x, y, (rand() - 0.5) * 90, [P.vermilion, P.lapis, P.verdigris][Math.floor(rand() * 3)]);
   }
   return s;
+}
+
+// An arched oak door in a stone frame: where the Tower staircase leads.
+// (x, y) is the bottom centre of the doorway; w × h is the opening.
+export function towerDoor(x, y, w = 110, h = 150) {
+  const l = x - w / 2, r = x + w / 2, top = y - h, spring = top + w * 0.5;
+  const arch = `M${l},${y} L${l},${spring} Q${l},${top} ${x},${top - w * 0.12} Q${r},${top} ${r},${spring} L${r},${y} Z`;
+  let stones = '';
+  const n = 9;
+  for (let i = 0; i <= n; i++) {
+    const a = Math.PI + (i / n) * Math.PI;
+    const cx = x + Math.cos(a) * (w / 2 + 14), cy = spring + Math.sin(a) * (w * 0.62 + 14);
+    stones += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="13" fill="${i % 2 ? P.stoneLight : P.stone}" ${o(2.5)}/>`;
+  }
+  let planks = '';
+  for (let k = 1; k < 5; k++) planks += `<path d="M${l + (w * k) / 5},${top} V${y}" stroke="${W.woodDark}" stroke-width="3"/>`;
+  return `
+  <g>
+    <!-- stone jambs and arch -->
+    <rect x="${l - 18}" y="${spring}" width="18" height="${y - spring}" fill="${P.stoneLight}" ${o(2.5)}/>
+    <rect x="${r}" y="${spring}" width="18" height="${y - spring}" fill="${P.stoneLight}" ${o(2.5)}/>
+    ${stones}
+    <!-- oak planks -->
+    <path d="${arch}" fill="url(#sc-woodgrain)" ${o(3)}/>
+    <clipPath id="tower-door-clip"><path d="${arch}"/></clipPath>
+    <g clip-path="url(#tower-door-clip)">
+      ${planks}
+      <!-- warm light glowing under the door -->
+      <rect x="${l}" y="${y - 10}" width="${w}" height="10" fill="#ffcf6a" opacity="0.8"/>
+    </g>
+    <!-- iron strap hinges, studs and a ring handle -->
+    <path d="M${l},${spring + 10} H${r - 22} M${l},${y - 34} H${r - 22}" stroke="${W.iron}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M${r - 22},${spring + 10} l10,-6 M${r - 22},${y - 34} l10,6" stroke="${W.iron}" stroke-width="5" stroke-linecap="round"/>
+    <g fill="${P.ink}"><circle cx="${l + 20}" cy="${spring + 10}" r="2.5"/><circle cx="${l + 50}" cy="${spring + 10}" r="2.5"/><circle cx="${l + 20}" cy="${y - 34}" r="2.5"/><circle cx="${l + 50}" cy="${y - 34}" r="2.5"/></g>
+    <circle cx="${r - 18}" cy="${(spring + y) / 2 + 8}" r="9" fill="none" stroke="${P.ink}" stroke-width="6"/>
+    <circle cx="${r - 18}" cy="${(spring + y) / 2 + 8}" r="9" fill="none" stroke="${P.goldDeep}" stroke-width="3"/>
+    <circle cx="${r - 18}" cy="${(spring + y) / 2 - 2}" r="4" fill="${W.iron}" ${o(1.5)}/>
+    <!-- light spilling onto the landing -->
+    <ellipse cx="${x}" cy="${y + 6}" rx="${w * 0.7}" ry="10" fill="#ffcf6a" opacity="0.35"/>
+  </g>`;
 }

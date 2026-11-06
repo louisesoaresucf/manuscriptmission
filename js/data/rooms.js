@@ -20,9 +20,8 @@ function scriptorium() {
     ${S.bookcase(560, 140, 480, 600, 4, r, [[0, 300, 4], [1, 0, 2], [2, 220, 3], [3, 330, 3]])}
     ${S.lectern(1090, 500)}
     ${S.desk(190, 560)}
-    ${S.lightPool(420, 900, 170, 45, '#e8c35a', 0.3)}
-    ${S.lightPool(330, 850, 90, 26, '#b8322a', 0.2)}
-    ${S.lightPool(1170, 900, 170, 45, '#2b4fa8', 0.2)}
+    ${S.lightPool(420, 900, 180, 48, '#fff1c8', 0.32)}
+    ${S.lightPool(1170, 900, 180, 48, '#fff1c8', 0.28)}
     ${S.floorClutter(r, 60, 1520, 790, 950, 16)}
     ${S.stool(500, 800, -75)}
     ${S.inkpot(560, 820, true)}
@@ -74,6 +73,7 @@ function towerArchive() {
     ${S.archWindow(1360, 170, 150, 360, true)}
     <g fill="#f7e08a"><circle cx="1395" cy="270" r="3"/><circle cx="1470" cy="380" r="2.5"/><circle cx="1410" cy="440" r="2"/></g>
     <rect x="0" y="0" width="1600" height="1000" fill="#0e0818" opacity="0.4"/>
+    ${S.towerDoor(320, 250, 104, 136)}
     ${S.staircase(40, 740, 8, 170, 70)}
     <rect x="0" y="0" width="1600" height="1000" fill="#0e0818" opacity="0.18"/>
     ${S.torch(490, 470)}

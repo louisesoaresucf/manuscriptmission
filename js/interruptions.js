@@ -119,7 +119,16 @@ export class Interruptions {
       return { x: v.x0 - 80 + (v.w + 160) * t, y: v.y1 - v.h * 0.06, rot: -28 + Math.sin(t * 40) * 14, opacity: 1 };
     }
     if (k === 'owl') {
-      return { x: v.x1 + 80 - (v.w + 160) * t, y: v.y0 + v.h * (0.45 - 0.2 * Math.sin(Math.PI * t)), rot: Math.sin(t * 9) * 6, opacity: 1 };
+      // A swoop: in high from the right, dipping low through the room, out high to the left.
+      const u = 0.5 - Math.cos(Math.PI * t) / 2;
+      const P = [[v.x1 + 90, v.y0 + v.h * 0.22], [v.x0 + v.w * 0.72, v.y0 + v.h * 0.78], [v.x0 + v.w * 0.3, v.y0 + v.h * 0.7], [v.x0 - 90, v.y0 + v.h * 0.18]];
+      const bez = (a, b, c, d, q) => (1 - q) ** 3 * a + 3 * (1 - q) ** 2 * q * b + 3 * (1 - q) * q * q * c + q ** 3 * d;
+      const x = bez(P[0][0], P[1][0], P[2][0], P[3][0], u), y = bez(P[0][1], P[1][1], P[2][1], P[3][1], u);
+      const q2 = Math.min(1, u + 0.01);
+      const dx = bez(P[0][0], P[1][0], P[2][0], P[3][0], q2) - x, dy = bez(P[0][1], P[1][1], P[2][1], P[3][1], q2) - y;
+      // Bank into the turn: the leading (left) wing dips as it descends.
+      const rot = (-Math.atan2(dy, -dx) * 180 / Math.PI) * 0.55;
+      return { x, y, rot, opacity: 1 };
     }
     const fade = Math.min(1, t * 6, (1 - t) * 6);
     return { x: v.x0 + v.w * 0.7, y: v.y0 + v.h * 0.78 + Math.sin(t * 12) * v.h * 0.012, rot: 0, opacity: fade };
@@ -143,12 +152,7 @@ export class Interruptions {
     const s = this.scale;
     this.actor.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${p.rot.toFixed(1)}) scale(${s.toFixed(3)})`);
     this.actor.style.opacity = this.shooed ? Math.max(0, 1 - (now - this.shooAt) * 2) : p.opacity;
-    if (this.kind.name === 'owl') {
-      const k = Math.cos(now * 18);
-      // Flap around the shoulders (y = -50), not the feet.
-      const sy = (0.25 + 0.75 * Math.abs(k)) * Math.sign(k || 1);
-      for (const w of this.actor.querySelectorAll('.owl-wing')) w.setAttribute('transform', `translate(0,-50) scale(${w.dataset.side},${sy.toFixed(3)}) translate(0,50)`);
-    }
+    if (this.kind.name === 'owl') this.flap(now, p, s);
     if (this.kind.name === 'witch') {
       const glow = this.actor.querySelector('.spell-glow');
       if (glow) glow.setAttribute('r', (24 + 8 * Math.sin(now * 10)).toFixed(1));
@@ -157,6 +161,32 @@ export class Interruptions {
     const done = this.shooed ? now - this.shooAt > 0.6 : t >= 1;
     if (done && !this.moving) this.end();
     else this.loop();
+  }
+
+  // Owl wingbeat: a quick, strong downstroke, a slower upstroke with the hand
+  // feathers folded in, three beats then a glide. The body lifts on each
+  // downstroke and the tail fans out while gliding.
+  flap(now, p, s) {
+    const T = 0.36;
+    const beat = Math.floor(now / T) % 4;
+    const ph = (now / T) % 1;
+    let arm, hand, bob, fan;
+    if (beat === 3) {
+      arm = -12 + Math.sin(ph * Math.PI) * 4; hand = -4; bob = 0; fan = 1.35;
+    } else if (ph < 0.38) {
+      const k = Math.sin((ph / 0.38) * Math.PI / 2);
+      arm = -55 + 95 * k; hand = -8 + 22 * k; bob = -5 * Math.sin((ph / 0.38) * Math.PI); fan = 1;
+    } else {
+      const k = (ph - 0.38) / 0.62;
+      const e = 0.5 - Math.cos(Math.PI * k) / 2;
+      arm = 40 - 95 * e; hand = 14 + 50 * Math.sin(Math.PI * k) - 22 * e; bob = 3 * Math.sin(Math.PI * k); fan = 1;
+    }
+    for (const w of this.actor.querySelectorAll('.owl-wing')) {
+      w.querySelector('.owl-arm').setAttribute('transform', `rotate(${arm.toFixed(1)} 8 -52)`);
+      w.querySelector('.owl-hand').setAttribute('transform', `rotate(${hand.toFixed(1)} 40 -64)`);
+    }
+    this.actor.querySelector('.owl-tail')?.setAttribute('transform', `scale(${fan.toFixed(2)},1)`);
+    this.actor.setAttribute('transform', `translate(${p.x.toFixed(1)} ${(p.y + bob * s).toFixed(1)}) rotate(${p.rot.toFixed(1)}) scale(${s.toFixed(3)})`);
   }
 
   fleeT(now) {
