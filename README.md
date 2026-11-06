@@ -81,3 +81,13 @@ The test plays all three rooms with real touch taps. Along the way it checks tha
 - every lore card opens, each room finishes, and all 36 items appear in the collection.
 
 Add `shots` after the device name to also save screenshots.
+
+A second test checks touch handling. It pinch-zooms and drags with real multi-touch events, then makes sure every illustration is still tappable. It also covers a lost "finger up" event and a slightly wobbly tap:
+
+```bash
+node tests/touch.js "iPhone 13"
+```
+
+## Versions
+
+The `control-v1` branch keeps the first released version (flat illustrations, cartoon witch) so you can compare it with later versions. On GitHub, open **Compare** and pick `control-v1` against `main` to see every change.
