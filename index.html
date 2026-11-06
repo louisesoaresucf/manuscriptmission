@@ -43,6 +43,8 @@
       </header>
       <div class="scene-wrap">
         <svg id="scene" aria-label="The library. Search for escaped illustrations."></svg>
+        <canvas id="relief" aria-hidden="true"></canvas>
+        <svg id="scene-front" aria-hidden="true"></svg>
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
       </div>
       <nav class="bookbar" id="bookbar" aria-label="Manuscripts">
@@ -85,6 +87,10 @@
     </div>
   </div>
 
+  <!-- three.js (MIT licence) draws the illustrations as 3D models -->
+  <script src="vendor/three/three.min.js"></script>
+  <script src="vendor/three/SVGLoader.js"></script>
+  <script src="vendor/three/BufferGeometryUtils.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

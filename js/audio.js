@@ -157,6 +157,105 @@ class Audio {
     src.start(t);
   }
 
+  // ---- the illustrations' own voices when tapped ----
+  react(kind) {
+    if (!this.ctx || !kind) return;
+    const f = (d, o = 1) => noteFreq(d, o);
+    switch (kind) {
+      case 'roar': this.growl(70, 0.9, 0.5); break;
+      case 'screech': this.sweep(1400, 900, 0.35, 'sawtooth', 0.12); break;
+      case 'neigh': this.sweep(700, 420, 0.6, 'sawtooth', 0.1, 9); break;
+      case 'flap': this.noiseBursts(4, 0.11, 900, 0.25); break;
+      case 'hiss': this.noiseBursts(1, 0.7, 5000, 0.18, 'highpass'); break;
+      case 'sing': [4, 6, 7, 9].forEach((d, i) => this.bell(f(d, 2), i * 0.18, 0.08)); break;
+      case 'chirp': [0, 0.12, 0.24].forEach((w) => this.sweep(2200, 3200, 0.07, 'sine', 0.12, 0, w)); break;
+      case 'crow': this.sweep(600, 900, 0.5, 'square', 0.06, 6); break;
+      case 'fire': this.noiseBursts(6, 0.12, 1200, 0.18); break;
+      case 'splash': this.noiseBursts(1, 0.45, 2500, 0.3); [7, 9].forEach((d, i) => this.bell(f(d, 2), 0.05 + i * 0.06, 0.06)); break;
+      case 'bubble': [0, 2, 4, 2, 5].forEach((d, i) => this.sweep(300 + d * 60, 600 + d * 80, 0.08, 'sine', 0.12, 0, i * 0.11)); break;
+      case 'rumble': this.growl(45, 1.0, 0.45); break;
+      case 'wind': this.noiseBursts(1, 1.3, 700, 0.3, 'bandpass', true); break;
+      case 'thunder': this.growl(38, 1.2, 0.6); this.noiseBursts(1, 0.2, 3000, 0.25); break;
+      case 'chime': [0, 4, 7, 11].forEach((d, i) => this.bell(f(d, 2), i * 0.09, 0.09)); break;
+      case 'twinkle': [7, 9, 11, 14].forEach((d, i) => this.bell(f(d, 2), i * 0.07, 0.07)); break;
+      case 'magnet': this.sweep(220, 880, 0.5, 'triangle', 0.1); break;
+      case 'scream': this.sweep(900, 1600, 0.6, 'sawtooth', 0.09, 14); break;
+      case 'rustle': this.noiseBursts(3, 0.12, 3500, 0.14, 'highpass'); break;
+      default: break;
+    }
+  }
+
+  sweep(from, to, dur, type = 'sine', gain = 0.12, vibrato = 0, when = 0) {
+    const t = this.ctx.currentTime + when;
+    const osc = this.ctx.createOscillator();
+    osc.type = type;
+    osc.frequency.setValueAtTime(from, t);
+    osc.frequency.exponentialRampToValueAtTime(to, t + dur);
+    if (vibrato) {
+      const lfo = this.ctx.createOscillator();
+      const lg = this.ctx.createGain();
+      lfo.frequency.value = vibrato;
+      lg.gain.value = from * 0.05;
+      lfo.connect(lg).connect(osc.frequency);
+      lfo.start(t); lfo.stop(t + dur);
+    }
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 3000;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(lp).connect(g).connect(this.sfx);
+    osc.start(t);
+    osc.stop(t + dur + 0.05);
+  }
+
+  growl(freq, dur, gain) {
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq * 1.4, t);
+    osc.frequency.exponentialRampToValueAtTime(freq, t + dur);
+    const lfo = this.ctx.createOscillator();
+    const lg = this.ctx.createGain();
+    lfo.frequency.value = 23;
+    lg.gain.value = gain * 0.6;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    lfo.connect(lg).connect(g.gain);
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 600;
+    osc.connect(lp).connect(g).connect(this.sfx);
+    osc.start(t); lfo.start(t);
+    osc.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+  }
+
+  noiseBursts(n, len, freq, gain, type = 'bandpass', swell = false) {
+    const sr = this.ctx.sampleRate;
+    for (let k = 0; k < n; k++) {
+      const t = this.ctx.currentTime + k * len * 0.9;
+      const buf = this.ctx.createBuffer(1, Math.floor(sr * len), sr);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) {
+        const x = i / d.length;
+        d[i] = (Math.random() * 2 - 1) * (swell ? Math.sin(Math.PI * x) : Math.pow(1 - x, 2));
+      }
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      const f = this.ctx.createBiquadFilter();
+      f.type = type;
+      f.frequency.value = freq;
+      const g = this.ctx.createGain();
+      g.gain.value = gain;
+      src.connect(f).connect(g).connect(this.sfx);
+      src.start(t);
+    }
+  }
+
   // ---- music: a drone on D and A with a wandering Dorian melody ----
   startMusic() {
     if (!this.ctx || this.musicTimer) return;

@@ -12,7 +12,9 @@ const DOUBLE_TAP_MS = 320;
 export class Viewport {
   constructor(svg, world, sceneW, sceneH, { onTap } = {}) {
     this.svg = svg;
-    this.world = world;
+    // One or more <g> groups that move together (back and front scenery layers).
+    this.worlds = Array.isArray(world) ? world : [world];
+    this.onChange = null;
     this.sw = sceneW;
     this.sh = sceneH;
     this.onTap = onTap || (() => false);
@@ -87,7 +89,9 @@ export class Viewport {
 
   apply() {
     this.clamp();
-    this.world.setAttribute('transform', `translate(${this.tx.toFixed(2)} ${this.ty.toFixed(2)}) scale(${this.s.toFixed(5)})`);
+    const t = `translate(${this.tx.toFixed(2)} ${this.ty.toFixed(2)}) scale(${this.s.toFixed(5)})`;
+    for (const w of this.worlds) w.setAttribute('transform', t);
+    this.onChange?.();
   }
 
   // Screen (container-local px) ↔ scene units.
