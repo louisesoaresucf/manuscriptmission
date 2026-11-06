@@ -107,4 +107,11 @@ The music is generated in the browser: a recorder-like flute, a harp, a drone an
 
 ## Versions
 
-The `control-v1` branch keeps the first released version (flat illustrations, cartoon witch) so you can compare it with later versions. On GitHub, open **Compare** and pick `control-v1` against `main` to see every change.
+Earlier versions are kept as branches so they can be compared with the newest one:
+
+| Branch | Version | What it has |
+|---|---|---|
+| `control-v1` | 1 | Flat illustrations, the first cartoon witch |
+| `control-v2` | 3 | 3D objects, the witch with her broom and owl, the estampie music. A frozen playable copy is at https://claude.ai/artifact/JWCAf4cVaLW1nyM5kYUy51 (private to the owner unless shared). |
+
+On GitHub, open **Compare** and pick a control branch against `main` to see every change since then.
