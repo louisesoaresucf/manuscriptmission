@@ -99,10 +99,7 @@ const BASE = process.env.BASE_URL || 'http://localhost:8765';
       await p.waitForTimeout(120);
       const sel = await p.evaluate(() => window.__mm.state.game.selected);
       if (sel !== id) { fail(`room ${room}: tapping ${id} selected ${sel}`); continue; }
-      const right = await p.evaluate(async (id) => {
-        const m = await import('/js/data/items.js');
-        return m.CATEGORY_BOOK[m.itemById[id].category];
-      }, id);
+      const right = await p.evaluate((id) => window.__mm.bookFor(id), id);
       if (room === 0 && n === 0) {
         // Wrong book first: item must stay and a hint appear.
         const wrong = right === 'bestiary' ? 'herbarium' : 'bestiary';

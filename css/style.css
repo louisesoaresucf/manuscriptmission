@@ -23,6 +23,9 @@ html, body {
   min-height: 100%;
 }
 
+/* Base text size: every rem-based size in the game scales from this. */
+html { font-size: 112.5%; }
+
 body {
   background-color: var(--parchment);
   background-image:
@@ -30,8 +33,8 @@ body {
     radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, rgba(120, 80, 30, 0.25) 100%);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 18px;
-  line-height: 1.45;
+  font-size: 1.12rem;
+  line-height: 1.5;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -101,7 +104,7 @@ h1, h2, h3 {
 }
 .card svg { width: 100%; height: auto; aspect-ratio: 1; display: block; }
 .card h3 { font-size: 1.7rem; margin-top: 8px; }
-.card .tag { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--lapis); }
+.card .tag { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--lapis); }
 .card p { margin: 6px 0 0; font-size: 1rem; }
 
 .books {
@@ -137,8 +140,9 @@ h1, h2, h3 {
   padding: calc(24px + env(safe-area-inset-top)) var(--gutter) calc(24px + env(safe-area-inset-bottom));
   gap: 20px;
 }
-.title-screen h1 { font-size: clamp(2.6rem, 12vw, 5rem); }
-.title-screen .books svg { width: 90px; }
+.title-screen h1 { font-size: clamp(1.9rem, 10.5vw, 5rem); text-wrap: balance; }
+.title-screen .books { gap: 16px; flex-wrap: nowrap; }
+.title-screen .books svg { width: min(84px, 24vw); }
 .title-screen p { max-width: 32em; margin: 0; text-align: left; }
 
 /* ---------- Screens ---------- */
@@ -197,7 +201,7 @@ h1, h2, h3 {
 .hud {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: calc(6px + env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) 6px max(var(--gutter), env(safe-area-inset-left));
   background: var(--vellum);
   border-bottom: 3px solid var(--gold);
@@ -206,17 +210,22 @@ h1, h2, h3 {
 }
 .room-name {
   flex: 1;
-  font-size: clamp(1.05rem, 4.5vw, 1.6rem);
+  min-width: 0;
+  font-size: clamp(0.9rem, 4.4vw, 1.6rem);
+  line-height: 1.05;
   margin: 0;
-  white-space: nowrap;
+  /* Long names wrap onto a second line rather than being cut off. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 .timer {
   font-variant-numeric: tabular-nums;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 500;
-  min-width: 3.2em;
+  min-width: 2.4em;
   text-align: right;
 }
 .icon-btn {
@@ -444,7 +453,7 @@ h1, h2, h3 {
 }
 .modal.open .modal-card { transform: none; }
 .modal-art svg { width: min(56vw, 200px); height: auto; aspect-ratio: 1; display: block; margin: 0 auto; }
-.modal-card .tag { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--lapis); }
+.modal-card .tag { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--lapis); }
 .modal-card h3 { font-size: 1.9rem; margin: 4px 0 6px; }
 .modal-card p { margin: 0 0 16px; font-size: 1.08rem; }
 .room-number {

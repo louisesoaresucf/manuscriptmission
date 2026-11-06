@@ -3,7 +3,7 @@
 import { mountSprite, useMarkup } from './art/sprite.js';
 import { storyPanel } from './art/ornaments.js';
 import { ROOMS } from './data/rooms.js';
-import { ITEMS } from './data/items.js';
+import { ITEMS, CATEGORY_BOOK, itemById } from './data/items.js';
 import { Game } from './game.js';
 import { audio } from './audio.js';
 import * as ui from './ui.js';
@@ -172,4 +172,4 @@ $('btn-mute').addEventListener('click', () => {
 });
 
 // Debug hook used by the automated tests.
-window.__mm = { state, ROOMS, startRoom, finale, openCollection };
+window.__mm = { state, ROOMS, startRoom, finale, openCollection, bookFor: (id) => CATEGORY_BOOK[itemById[id].category] };
