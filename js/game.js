@@ -5,6 +5,7 @@ import { itemById, CATEGORY_BOOK, wrongBookHint } from './data/items.js';
 import { BOOKS } from './art/ornaments.js';
 import { audio } from './audio.js';
 import * as ui from './ui.js';
+import { Interruptions, SHOO_BONUS } from './interruptions.js';
 
 export const HINT_COOLDOWN = 30; // seconds
 export const HINT_PENALTY = 10; // seconds added to the star time per hint
@@ -35,6 +36,7 @@ export class Game {
       onTap: (pt) => this.tapScene(pt),
     });
     this.scene.attach(this.viewport);
+    this.villain = new Interruptions(this);
     document.getElementById('room-name').textContent = this.room.name;
 
     const sig = { signal: this.abort.signal };
@@ -56,6 +58,7 @@ export class Game {
   destroy() {
     this.abort.abort();
     clearInterval(this.tick);
+    this.villain?.destroy();
     this.viewport?.destroy();
     this.scene?.destroy();
     ui.hideToast();
@@ -77,6 +80,7 @@ export class Game {
 
   updateHud() {
     if (this.done) return;
+    this.villain?.update(this.elapsed());
     document.getElementById('timer').textContent = ui.fmtTime(this.elapsed());
     const left = Math.ceil(this.hintReadyAt - this.elapsed());
     const btn = document.getElementById('btn-hint');
@@ -112,6 +116,7 @@ export class Game {
   // ---- selecting and placing ----
   tapScene(pt) {
     if (this.busy || this.done) return true;
+    if (this.villain?.hit(pt)) { this.villain.shoo(); return true; }
     const hit = this.scene.hitTest(pt, this.viewport.s);
     if (hit) {
       if (this.selected === hit.id) this.deselect();
@@ -254,9 +259,11 @@ export class Game {
     this.done = true;
     clearInterval(this.tick);
     const time = this.elapsed();
-    const scored = time + this.hints * HINT_PENALTY;
+    const shoos = this.villain?.shoos || 0;
+    this.villain?.destroy();
+    const scored = Math.max(0, time + this.hints * HINT_PENALTY - shoos * SHOO_BONUS);
     const [three, two] = this.room.stars;
     const stars = scored <= three ? 3 : scored <= two ? 2 : 1;
-    this.onComplete({ time, hints: this.hints, scored, stars });
+    this.onComplete({ time, hints: this.hints, shoos, scored, stars });
   }
 }

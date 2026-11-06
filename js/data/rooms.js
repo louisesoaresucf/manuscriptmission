@@ -111,7 +111,14 @@ export const ROOMS = [
     intro: 'Where the monks copy books by daylight. Twelve illustrations have escaped here!',
     done: 'The Scriptorium is restored! But the witch’s magic still swirls through the Reading Hall…',
     stars: [150, 300],
+    villain: 'broom',
     scene: scriptorium,
+    // Other places where escaped illustrations can end up when moved.
+    spots: [
+      [300, 870], [520, 935], [790, 875], [890, 945], [1180, 860], [1390, 905],
+      [640, 380], [960, 520], [700, 680], [830, 230], [1150, 540], [285, 560],
+      [1400, 560], [1260, 300],
+    ],
     items: [
       { id: 'unicorn', x: 170, y: 868, size: 130, rot: 0 },
       { id: 'griffin', x: 930, y: 68, size: 110, rot: 0 },
@@ -133,7 +140,13 @@ export const ROOMS = [
     intro: 'Long tables, chained books and a great rose window. Look carefully!',
     done: 'The Reading Hall is in order again! Only the Tower Archive remains, where the witch’s spell is strongest…',
     stars: [180, 360],
+    villain: 'owl',
     scene: readingHall,
+    spots: [
+      [300, 885], [600, 905], [880, 925], [1250, 885], [1390, 945], [650, 580],
+      [820, 580], [280, 240], [200, 400], [320, 725], [1300, 240], [1440, 400],
+      [1260, 725], [1370, 70],
+    ],
     items: [
       { id: 'phoenix', x: 230, y: 70, size: 90, rot: 0 },
       { id: 'basilisk', x: 730, y: 770, size: 85, rot: -10 },
@@ -156,7 +169,13 @@ export const ROOMS = [
     done: 'Every illustration is home at last, and the witch’s spell is broken!',
     stars: [210, 420],
     vignette: true,
+    villain: 'witch',
     scene: towerArchive,
+    spots: [
+      [300, 905], [560, 885], [860, 935], [1250, 905], [1480, 925], [150, 575],
+      [240, 365], [650, 520], [700, 330], [930, 700], [1460, 680], [1440, 560],
+      [980, 40], [1230, 620],
+    ],
     items: [
       { id: 'manticore', x: 232, y: 428, size: 76, rot: 0 },
       { id: 'caladrius', x: 500, y: 42, size: 68, rot: 0 },

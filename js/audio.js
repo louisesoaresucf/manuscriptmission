@@ -185,6 +185,26 @@ class Audio {
     }
   }
 
+  // The villains: a warning, their mischief, and their retreat when shooed.
+  villain(kind, moment) {
+    if (!this.ctx) return;
+    if (moment === 'shoo') {
+      [7, 4, 2, 0].forEach((d, i) => this.pluck(noteFreq(d, 1), i * 0.07, 0.35));
+      return;
+    }
+    if (kind === 'broom') {
+      if (moment === 'warn') this.noiseBursts(5, 0.28, 2600, 0.22, 'bandpass', true);
+      else this.noiseBursts(8, 0.18, 1800, 0.25, 'bandpass', true);
+    } else if (kind === 'owl') {
+      const hoot = (when, f) => this.sweep(f, f * 0.92, 0.32, 'sine', 0.2, 0, when);
+      if (moment === 'warn') { hoot(0, 392); hoot(0.45, 330); hoot(0.95, 330); }
+      else { this.noiseBursts(5, 0.12, 900, 0.25); hoot(0.5, 349); }
+    } else if (kind === 'witch') {
+      if (moment === 'warn') [0, 0.16, 0.32, 0.48, 0.64].forEach((w, i) => this.sweep(780 - i * 40, 520 - i * 30, 0.13, 'sawtooth', 0.07, 11, w));
+      else { this.sweep(200, 1800, 0.5, 'sawtooth', 0.08); [0, 3, 6, 9].forEach((d, i) => this.bell(noteFreq(d, 2), 0.2 + i * 0.06, 0.07)); }
+    }
+  }
+
   sweep(from, to, dur, type = 'sine', gain = 0.12, vibrato = 0, when = 0) {
     const t = this.ctx.currentTime + when;
     const osc = this.ctx.createOscillator();

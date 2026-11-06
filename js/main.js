@@ -26,9 +26,9 @@ $('title-books').innerHTML = ['bestiary', 'alchemy', 'herbarium']
 // ---------- story ----------
 const INTRO = [
   { art: 'library', label: 'A peaceful medieval library', text: 'Long ago, in a great library, the most beautiful manuscripts in the land sat safely on their shelves, full of painted beasts, elements and herbs.' },
-  { art: 'witch', label: 'The witch casts her spell', text: 'But one stormy night, a jealous witch crept in and cast a tumbling spell!' },
+  { art: 'witch', label: 'The witch casts her spell, with her owl and her enchanted broom', text: 'But one stormy night, a jealous witch crept in with her eagle-owl and her enchanted broom, and cast a tumbling spell!' },
   { art: 'escape', label: 'Illustrations escaping from fallen books', text: 'Every book fell from its shelf, and the illustrations painted inside escaped into the library!' },
-  { art: 'howto', label: 'Creatures go to the Bestiary, elements to the Alchemy Codex, plants to the Herbarium', text: 'Tap an illustration to pick it up, then tap the book where it belongs. Pinch or scroll to zoom, and drag to look around. Stuck? The magic quill gives a hint.' },
+  { art: 'howto', label: 'Creatures go to the Bestiary, elements to the Alchemy Codex, plants to the Herbarium', text: 'Tap an illustration to pick it up, then tap the book where it belongs. Pinch or scroll to zoom, and drag to look around. Stuck? The magic quill gives a hint. Beware: every minute the witch’s broom, her owl or the witch herself comes to move things. Tap them to shoo them away!' },
 ];
 
 function playStory(panels, done, lastButton = 'Enter the library') {
@@ -89,7 +89,8 @@ function roomComplete(index, r) {
 
   $('result-title').textContent = `${room.name} restored!`;
   $('result-stars').innerHTML = ui.starsMarkup(r.stars);
-  $('result-time').textContent = `Time: ${ui.fmtTime(r.time)}` + (r.hints ? `  ·  Hints used: ${r.hints} (+${r.hints * 10}s)` : '  ·  No hints used!');
+  $('result-time').textContent = `Time: ${ui.fmtTime(r.time)}` + (r.hints ? `  ·  Hints used: ${r.hints} (+${r.hints * 10}s)` : '  ·  No hints used!') +
+    (r.shoos ? `  ·  Shooed away: ${r.shoos} (−${r.shoos * 10}s)` : '');
   $('result-text').textContent = room.done;
   $('result-actions').innerHTML = `
     <button class="btn" type="button" data-act="next">${last ? 'See the library restored' : 'Next room'}</button>
