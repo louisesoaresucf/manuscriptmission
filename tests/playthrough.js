@@ -21,12 +21,11 @@ const BASE = process.env.BASE_URL || 'http://localhost:8765';
   await p.waitForTimeout(800);
   if (SHOTS) await p.screenshot({ path: `shot-title.png` });
 
-  // Title → intro story (4 panels)
-  await p.tap('#btn-begin');
-  for (let i = 0; i < 4; i++) {
-    await p.waitForTimeout(150);
-    if (SHOTS) await p.screenshot({ path: `shot-story${i}.png` });
-    await p.tap('#story-actions [data-act="next"]');
+  // The manuscript: open the cover, turn through the four story pages, enter.
+  for (let i = 0; i < 5; i++) {
+    await p.waitForTimeout(500);
+    if (SHOTS) await p.screenshot({ path: `shot-book${i}.png` });
+    await p.tap('#book-next');
   }
   const tapItem = async (id) => {
     // Bring the item on screen (like a player panning), then tap its centre.
@@ -129,11 +128,10 @@ const BASE = process.env.BASE_URL || 'http://localhost:8765';
     if (SHOTS) await p.screenshot({ path: `shot-result${room}.png` });
     await p.tap('#result-actions [data-act="next"]');
   }
-  // Finale → collection
-  await p.waitForSelector('#screen-story.active');
+  // Finale: the manuscript reopens at the restored library, then the collection.
+  await p.waitForSelector('#screen-book.active');
+  await p.waitForTimeout(1600);
   if (SHOTS) await p.screenshot({ path: `shot-finale.png` });
-  await p.tap('#story-actions [data-act="next"]');
-  await p.waitForSelector('#screen-collection.active');
   const got = await p.$$eval('.col-item.got', (x) => x.length);
   console.log('collection items:', got);
   if (got !== 36) fail('collection incomplete');

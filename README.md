@@ -14,6 +14,8 @@ All the art is hand-coded SVG in the style of medieval illuminated manuscripts. 
 
 ## How to play
 
+The game opens as a leather-bound manuscript. Tap the cover to unclasp it, and turn the pages (tap, swipe or the arrow keys) to read the story as illuminations. At the end of the game the manuscript reopens to show the restored library, and its last pages hold the collection of all 36 lore entries.
+
 1. Tap an illustration hidden in the library to pick it up. It glows gold.
 2. Tap the book it belongs in, at the bottom of the screen (or at the side in landscape).
    - **Right book:** the illustration flies home and its lore card opens.
@@ -46,10 +48,12 @@ The game will appear at `https://<your-username>.github.io/manuscriptmission/` a
 ## Project layout
 
 ```
-index.html            Screens: title, story, game, results, collection
+index.html            Screens: the manuscript, the game, results
+js/book.js            The manuscript: cover, page turns, story, finale and collection pages
+css/book.css          Leather cover, vellum pages and the 3D page turn
 gallery.html          Art review page listing all 36 illustrations
 css/style.css         Parchment theme, layouts (portrait and landscape), animations
-js/main.js            Screen flow: title → story → rooms → finale → collection
+js/main.js            Screen flow: manuscript → rooms → manuscript again (finale, collection)
 js/game.js            One room of play: selecting, placing, hints, timer, stars
 js/scene.js           Builds a room's SVG and hit-tests taps
 js/viewport.js        Pinch-zoom and pan with Pointer Events
@@ -98,6 +102,8 @@ A third test checks the interruptions. In every room it confirms that the warnin
 ```bash
 node tests/villains.js "iPhone 13"
 ```
+
+Two more tests: `tests/reactions.js` taps all 36 illustrations and checks each one moves and returns to rest, and `tests/book.js` opens the manuscript and turns every page on a phone and on a wide screen.
 
 To test the flat 2D fallback used on devices without WebGL, run the playthrough with `FORCE_2D=1`.
 
