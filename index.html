@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f1e4c3">
+  <title>Manuscript Mission</title>
+  <meta name="description" content="A witch's spell has scattered a medieval library. Find the escaped creatures, elements and plants and return them to their manuscripts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="app">
+    <!-- Title -->
+    <section class="screen title-screen active" id="screen-title">
+      <h1>Manuscript Mission</h1>
+      <div class="books" id="title-books"></div>
+      <p><span class="initial">A</span> wicked witch has cast a spell upon the great library! Every book has tumbled from its shelf, and the creatures, elements and plants painted inside have escaped. Find them and return each one to its manuscript.</p>
+      <button class="btn" id="btn-begin" type="button">Begin</button>
+    </section>
+
+    <!-- Story panels (intro and finale) -->
+    <section class="screen story-screen" id="screen-story">
+      <figure class="panel"><svg id="story-art" viewBox="0 0 400 260" role="img" aria-label=""></svg></figure>
+      <p class="story-text" id="story-text"></p>
+      <div class="actions" id="story-actions"></div>
+    </section>
+
+    <!-- The game -->
+    <section class="screen game-screen" id="screen-game">
+      <header class="hud">
+        <h2 class="room-name" id="room-name"></h2>
+        <div class="timer" id="timer" aria-label="Time">0:00</div>
+        <button class="icon-btn hint-btn" id="btn-hint" type="button" aria-label="Hint">
+          <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M30,4 C20,10 12,20 8,34 L10,35 C14,24 20,16 32,8 Z" fill="#fbf8ef" stroke="#2a1c10" stroke-width="2" stroke-linejoin="round"/><path d="M8,34 L5,38" stroke="#2a1c10" stroke-width="2.5" stroke-linecap="round"/><path d="M28,8 L14,28" stroke="#2a1c10" stroke-width="1"/></svg>
+          <span class="cooldown" id="hint-cooldown"></span>
+        </button>
+        <button class="icon-btn" id="btn-mute" type="button" aria-label="Mute sound" aria-pressed="false">
+          <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8,15 H14 L22,8 V32 L14,25 H8 Z" fill="#fbf8ef" stroke="#2a1c10" stroke-width="2" stroke-linejoin="round"/><path class="wave" d="M27,14 C30,17 30,23 27,26 M31,10 C36,16 36,24 31,30" fill="none" stroke="#2a1c10" stroke-width="2.2" stroke-linecap="round"/><path class="cross" d="M27,15 L35,25 M35,15 L27,25" stroke="#b8322a" stroke-width="2.6" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <div class="scene-wrap">
+        <svg id="scene" aria-label="The library. Search for escaped illustrations."></svg>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+      <nav class="bookbar" id="bookbar" aria-label="Manuscripts">
+        <button class="book-btn" data-book="bestiary" type="button"><svg viewBox="0 0 100 130" aria-hidden="true"><use href="#book-bestiary"/></svg><span class="book-label">Bestiary</span><span class="count" data-count="bestiary">0/4</span></button>
+        <button class="book-btn" data-book="alchemy" type="button"><svg viewBox="0 0 100 130" aria-hidden="true"><use href="#book-alchemy"/></svg><span class="book-label">Alchemy Codex</span><span class="count" data-count="alchemy">0/4</span></button>
+        <button class="book-btn" data-book="herbarium" type="button"><svg viewBox="0 0 100 130" aria-hidden="true"><use href="#book-herbarium"/></svg><span class="book-label">Herbarium</span><span class="count" data-count="herbarium">0/4</span></button>
+      </nav>
+    </section>
+
+    <!-- Room complete -->
+    <section class="screen result-screen" id="screen-result">
+      <div class="result-card">
+        <h2 id="result-title"></h2>
+        <div class="stars" id="result-stars"></div>
+        <p class="result-time" id="result-time"></p>
+        <p id="result-text"></p>
+        <div class="actions" id="result-actions"></div>
+      </div>
+    </section>
+
+    <!-- Collection of lore -->
+    <section class="screen collection-screen" id="screen-collection">
+      <header class="collection-head">
+        <h2>The Restored Manuscripts</h2>
+        <p id="collection-count"></p>
+      </header>
+      <div id="collection"></div>
+      <div class="actions"><button class="btn" id="btn-collection-back" type="button">Back</button></div>
+    </section>
+  </main>
+
+  <!-- Modal card: room introduction and lore -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-art" id="modal-art"></div>
+      <span class="tag" id="modal-tag"></span>
+      <h3 id="modal-title"></h3>
+      <p id="modal-text"></p>
+      <button class="btn" id="modal-btn" type="button">Continue</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
