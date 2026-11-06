@@ -2,7 +2,11 @@
 // The <svg> fills its container; a <g> "world" holds the 1600×1000 scene
 // and is moved with translate/scale. A pointer that barely moves is a tap.
 
-const TAP_SLOP = 8; // px a finger may wander and still count as a tap
+// A touch counts as a tap if the finger barely moved, or if it was a quick
+// touch with a little wobble (real fingertips wander more than mice do).
+const TAP_SLOP = 10; // px: beyond this, a touch becomes a drag
+const QUICK_TAP_MS = 350;
+const QUICK_TAP_SLOP = 24; // px allowed for a quick touch
 const DOUBLE_TAP_MS = 320;
 
 export class Viewport {
@@ -30,6 +34,10 @@ export class Viewport {
     svg.addEventListener('pointermove', this.handlers.move);
     svg.addEventListener('pointerup', this.handlers.up);
     svg.addEventListener('pointercancel', this.handlers.up);
+    // If the browser takes a pointer away without a pointerup, forget it, or
+    // every later tap would look like the second finger of a pinch.
+    this.handlers.lost = (e) => { this.pointers.delete(e.pointerId); if (!this.pointers.size) this.gesture = null; };
+    svg.addEventListener('lostpointercapture', this.handlers.lost);
     svg.addEventListener('wheel', this.handlers.wheel, { passive: false });
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(svg);
@@ -42,6 +50,7 @@ export class Viewport {
     svg.removeEventListener('pointermove', this.handlers.move);
     svg.removeEventListener('pointerup', this.handlers.up);
     svg.removeEventListener('pointercancel', this.handlers.up);
+    svg.removeEventListener('lostpointercapture', this.handlers.lost);
     svg.removeEventListener('wheel', this.handlers.wheel);
     this.ro.disconnect();
     cancelAnimationFrame(this.anim);
@@ -129,11 +138,14 @@ export class Viewport {
   onDown(e) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     cancelAnimationFrame(this.anim);
+    // The first finger of a new touch always starts fresh. This clears any
+    // pointer whose "up" event the browser never delivered.
+    if (e.isPrimary) this.pointers.clear();
     try { this.svg.setPointerCapture(e.pointerId); } catch { /* synthetic or already-released pointer */ }
     const p = this.local(e);
     this.pointers.set(e.pointerId, p);
     if (this.pointers.size === 1) {
-      this.gesture = { type: 'pan', start: p, last: p, moved: false, multi: false };
+      this.gesture = { type: 'pan', start: p, last: p, moved: false, multi: false, t0: performance.now(), maxMove: 0 };
     } else if (this.pointers.size === 2) {
       const [a, b] = [...this.pointers.values()];
       this.gesture = {
@@ -153,7 +165,9 @@ export class Viewport {
     const g = this.gesture;
     if (!g) return;
     if (g.type === 'pan' && this.pointers.size === 1) {
-      if (!g.moved && Math.hypot(p.x - g.start.x, p.y - g.start.y) > TAP_SLOP) g.moved = true;
+      const dist = Math.hypot(p.x - g.start.x, p.y - g.start.y);
+      g.maxMove = Math.max(g.maxMove || 0, dist);
+      if (!g.moved && dist > TAP_SLOP) g.moved = true;
       if (g.moved) {
         this.tx += p.x - g.last.x;
         this.ty += p.y - g.last.y;
@@ -186,8 +200,12 @@ export class Viewport {
     }
     if (this.pointers.size === 0) {
       this.gesture = null;
-      if (g && !g.moved && !g.multi) this.tap(p);
+      if (g && !g.multi && (!g.moved || this.isQuickTap(g))) this.tap(g.moved ? g.start : p);
     }
+  }
+
+  isQuickTap(g) {
+    return performance.now() - g.t0 < QUICK_TAP_MS && g.maxMove < QUICK_TAP_SLOP;
   }
 
   tap(p) {

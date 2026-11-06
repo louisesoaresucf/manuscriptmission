@@ -76,65 +76,95 @@ function beast(fill, shade, foot = 'hoof') {
 }
 
 export function unicorn() {
+  // A rampant unicorn, as on medieval tapestries: rearing, collared in gold.
+  const hoof = (x, y, r = 0) => `<path d="M${x - 3},${y - 2.5} L${x + 3},${y - 2.5} L${x + 3.5},${y + 2} L${x - 3.5},${y + 2} Z" transform="rotate(${r} ${x} ${y})" fill="${P.gold}" stroke="${P.ink}" stroke-width="1.2" stroke-linejoin="round"/><path d="M${x},${y - 2.5} v4.5" transform="rotate(${r} ${x} ${y})" stroke="${P.ink}" stroke-width="0.7"/>`;
   return `
-  ${tube('M80,56 C88,54 90,62 87,68', P.white, 2.4)}
-  <path d="M85,66 C82,70 84,76 88,76 C92,77 94,72 91,67 Z" fill="${P.gold}" ${OUTLINE} stroke-width="1.5"/>
-  ${beast(P.white, P.stoneLight, 'hoof')}
-  <g ${OUTLINE}>
-    <path d="M44,52 C40,44 32,36 29,27 C28,22 25,19 21,19 C17,19 13,22 12,26 L6,36 C5.5,39 8,41.5 11,40.5 C14,39.5 17,37.5 20,36.5 C24,41 28,49 34,58 Z" fill="${P.white}"/>
-    <path d="M24,20 L27,11 L29,21 Z" fill="${P.white}"/>
-    <path d="M14.5,21.5 L6,3 L19,19.5 Z" fill="${P.gold}"/>
-    <path d="M9.5,40.5 L8.5,48 L14,40 Z" fill="${P.white}"/>
-  </g>
-  <!-- spiral on the horn -->
-  <path d="M8.5,8.5 l3,-1.2 M10.3,12.5 l3.6,-1.5 M12.2,16.5 l4,-1.6" ${FINE} stroke-width="1"/>
+  <!-- lion's tail with a golden tuft -->
+  ${tube('M74,60 C84,58 90,48 86,38', P.white, 2.4)}
+  <path d="M86,40 C82,37 83,30 88,31 C89,26 95,28 94,33 C98,35 95,41 90,40 Z" fill="${P.gold}" ${OUTLINE} stroke-width="1.4"/>
+  <!-- far legs -->
+  ${tube('M70,66 C74,74 74,80 73,87', P.stoneLight, 4.5)}
+  ${tube('M41,50 C35,46 31,42 28,40 C26,42 23,44 20,44', P.stoneLight, 4)}
+  <!-- body, neck and head in one flowing outline -->
+  <path d="M14,30 C14,24 18,19 24,16 C28,13 33,12 37,13 C42,15 44,20 44,26 C46,34 50,40 56,44 C64,48 72,54 74,62 C76,70 72,74 66,73 C58,72 50,66 44,62 C40,58 38,52 36,46 C34,40 32,36 28,34 C24,33 20,33 17,33 C15,33 14,32 14,30 Z" fill="${P.white}" ${OUTLINE}/>
+  <path d="M36,13 L38.5,4.5 L41,14 Z" fill="${P.white}" ${OUTLINE} stroke-width="1.5"/>
+  <path d="M17,33 L17,40.5 L21,33 Z" fill="${P.white}" ${OUTLINE} stroke-width="1.4"/>
+  <!-- near legs -->
+  ${tube('M62,66 C60,74 59,80 58,87', P.white, 5)}
+  ${tube('M43,55 C37,52 31,50 27,48 C25,52 22,55 19,56', P.white, 4.6)}
+  ${hoof(73, 89)}${hoof(58, 89)}${hoof(18, 57, 60)}${hoof(19, 44, 80)}
+  <!-- the spiralled golden horn -->
+  <path d="M22,17 L8,0.5 L27,14 Z" fill="${P.gold}" ${OUTLINE} stroke-width="1.5"/>
+  <path d="M11.5,4 l2.4,-1.4 M14.5,7.5 l3,-1.6 M17.5,11 l3.4,-1.8 M20.5,14.5 l3,-1.6" ${FINE} stroke-width="0.9"/>
   <!-- golden mane -->
-  ${tube('M27,22 q5,1 4,6 q5,1 4,6 q5,1 4,6 q5,1 4,6', P.goldMid, 2.6)}
-  <!-- gold collar -->
-  <path d="M28,46 C32,48 37,47 40,43" fill="none" stroke="${P.ink}" stroke-width="5" stroke-linecap="round"/>
-  <path d="M28,46 C32,48 37,47 40,43" fill="none" stroke="${P.goldMid}" stroke-width="2.8" stroke-linecap="round"/>
-  <circle cx="33.5" cy="47.5" r="1.8" fill="${P.vermilion}" stroke="${P.ink}" stroke-width="0.8"/>
-  <circle cx="17" cy="27" r="1.6" fill="${P.ink}"/>
-  <path d="M8.5,36.5 l1.5,0.5 M14,32 C17,34 20,34 22,32" ${FINE}/>
-  <path d="M22,26 C25,32 29,40 34,46" ${HILITE}/>`;
+  ${tube('M42,16 C48,20 45,26 50,30 C55,34 51,38 57,43', P.goldMid, 2.8)}
+  <path d="M44,20 l-3,2 M47,27 l-3,2 M51,33 l-3,2 M54,39 l-3,2" stroke="${P.goldMid}" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- gold collar with a hanging chain -->
+  <path d="M34.5,40 C40,43 46,41 50,36" fill="none" stroke="${P.ink}" stroke-width="5" stroke-linecap="round"/>
+  <path d="M34.5,40 C40,43 46,41 50,36" fill="none" stroke="${P.goldMid}" stroke-width="3" stroke-linecap="round"/>
+  <path d="M41,42 C42,50 46,56 52,60" fill="none" stroke="${P.goldMid}" stroke-width="1.3" stroke-dasharray="1.6 1.2"/>
+  <circle cx="41" cy="42" r="1.8" fill="${P.vermilion}" stroke="${P.ink}" stroke-width="0.7"/>
+  <!-- face -->
+  <path d="M26,20 Q29,17.8 32,20 Q29,21.6 26,20 Z" fill="${P.ink}"/>
+  <path d="M25,17.5 L32.5,18.4" stroke="${P.ink}" stroke-width="0.9" stroke-linecap="round"/>
+  <path d="M16,29 l1.6,0.3 M20,31 C24,30.5 28,31 31,33" ${FINE}/>
+  <!-- shading -->
+  <path d="M52,63 C58,68 63,70 68,69 M64,56 C69,57 71,61 70,65" ${FINE}/>
+  <path d="M40,48 C48,46 58,48 66,54 M30,16 C36,15 40,18 41,23" ${HILITE}/>`;
 }
 
 export function dragon() {
+  // A rampant dragon: rearing on its hind legs, wings raised, jaws open.
   return `
-  <!-- coiled tail with an arrow tip -->
-  ${tube('M34,66 C20,74 8,66 11,54 C13,46 24,46 25,54 C25.5,58 22,60 20,58', P.verdigris, 5)}
-  <path d="M19,59 L13,57 L18,53 Z" fill="${P.vermilion}" ${OUTLINE} stroke-width="1.3"/>
   <g ${OUTLINE}>
-    <!-- far leg -->
-    <path d="M42,66 L38,84 L44,84 L48,68 Z" fill="${P.verdigrisDark}"/>
-    <!-- wing -->
-    <path d="M52,50 L38,10 C44,14 46,16 47,20 C49,14 52,10 56,8 C57,14 57,18 57,22 C61,17 66,14 72,14 C68,22 64,32 62,44 Z" fill="${P.vermilion}"/>
+    <!-- far wing -->
+    <path d="M57,44 C62,30 70,19 85,12 C83,20 85,25 90,29 C83,31 81,35 83,40 C76,40 70,43 66,49 Z" fill="${P.vermilionDark}"/>
+    <!-- near wing, ribbed like a bat's -->
+    <path d="M51,47 C40,30 26,15 6,6 C11,14 11,21 9,28 C17,26 22,30 21,37 C28,35 32,39 32,45 C38,43 42,47 44,52 Z" fill="${P.vermilion}"/>
+  </g>
+  <path d="M51,47 L7,7 M50,48 L10,27 M49,49 L21,36 M48,50 L32,44" ${FINE} stroke-width="1"/>
+  <path d="M6,6 l-3,-3" stroke="${P.ink}" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M30,24 C26,21 20,17 14,14" ${HILITE}/>
+  <!-- tail sweeping round to an arrow tip -->
+  ${tube('M42,84 C28,93 10,91 8,79 C6,67 18,62 22,70', P.verdigris, 4.6)}
+  <path d="M21,69 L27,63 L27,72 Z" fill="${P.gold}" ${OUTLINE} stroke-width="1.3"/>
+  <g ${OUTLINE}>
+    <!-- hind legs -->
+    <path d="M52,66 C58,72 60,80 58,86 L65,91 L52,92 L52,84 C51,78 49,72 47,68 Z" fill="${P.verdigrisDark}"/>
+    <path d="M39,64 C34,72 34,80 38,86 L31,92 L46,92 L44,84 C46,78 48,72 49,66 Z" fill="${P.verdigris}"/>
     <!-- body -->
-    <path d="M30,62 C33,50 48,45 60,48 C69,51 71,60 65,66 C59,72 44,74 35,71 C31,69 29,66 30,62 Z" fill="${P.verdigris}"/>
-    <!-- near leg -->
-    <path d="M58,64 L63,84 L69,84 L64,63 Z" fill="${P.verdigris}"/>
+    <path d="M40,71 C35,60 39,48 50,42 C58,38 65,44 63,54 C61,64 55,74 46,77 Z" fill="${P.verdigris}"/>
     <!-- neck and head -->
-    <path d="M56,50 C62,40 66,32 71,25 L80,29 C74,36 69,45 66,56 Z" fill="${P.verdigris}"/>
-    <path d="M69,23 C72,16 81,15 86,19 L95,23 C96,26 94,28.5 91,28.5 L86,29 C88,32 87,34 84,33 C80,33 74,31 71,29 Z" fill="${P.verdigris}"/>
-    <path d="M74,18 L70,8 L78,16 Z" fill="${P.gold}"/>
+    <path d="M52,45 C49,35 53,26 61,21 L70,25 C64,30 61,37 61,47 Z" fill="${P.verdigris}"/>
+    <path d="M60,20 C62,13 70,9 76,12 L91,15 C93,17 92,20 89,20 L80,21 L88,25 C88,28 86,29 83,28 L76,27 C70,29 64,27 61,24 Z" fill="${P.verdigris}"/>
+    <!-- horns -->
+    <path d="M66,12 L58,1 L71,9 Z" fill="${P.gold}" stroke-width="1.3"/>
+    <path d="M71,11 L69,2 L76,10 Z" fill="${P.gold}" stroke-width="1.3"/>
+    <!-- raised forelegs -->
+    <path d="M58,49 C64,49 69,51 73,55 L70,59 C66,56 62,55 58,56 Z" fill="${P.verdigris}" stroke-width="1.6"/>
+    <path d="M56,58 C62,60 66,63 69,67 L66,70 C63,66 59,64 55,64 Z" fill="${P.verdigrisDark}" stroke-width="1.6"/>
   </g>
-  <!-- belly plates -->
-  <path d="M33,68 C42,72 54,72 63,66" fill="none" stroke="${P.goldMid}" stroke-width="3"/>
-  <path d="M38,69 l1,2.5 M44,70 l0.5,2.5 M50,70 l0,2.5 M56,69 l-0.5,2.5 M61,67 l-1,2.3" ${FINE}/>
-  <!-- wing ribs -->
-  <path d="M52,49 L41,13 M53,47 L55,11 M56,46 L70,16" ${FINE} stroke-width="1"/>
-  <path d="M46,30 l3,0 M54,28 l2.5,0 M60,30 l3,1" ${HILITE}/>
-  <!-- spines -->
-  <g fill="${P.gold}" stroke="${P.ink}" stroke-width="1" stroke-linejoin="round">
-    <path d="M62,40 l1,-5 l3,4 Z M66,33 l1,-5 l3,4 Z M42,47 l2,-4 l2,4 Z M34,51 l1,-4 l3,3 Z"/>
+  <!-- open mouth, fangs and forked tongue -->
+  <path d="M79,21 L90,20 L86,24 Z" fill="${P.vermilionDark}"/>
+  <path d="M81,20 l1,2 l1,-2 M85,20 l1,2 l1,-2 M80,22 l1,-1.6 l1,1.6 M84,23 l1,-1.6 l1,1.6" fill="${P.white}" stroke="${P.ink}" stroke-width="0.5"/>
+  <path d="M87,22 L97,25 L94,25.5 L96,28" fill="none" stroke="${P.vermilion}" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- fierce eye -->
+  <path d="M70,14.5 Q73,12 76,14.5 Q73,16.5 70,14.5 Z" fill="${P.goldPale}" stroke="${P.ink}" stroke-width="0.8"/>
+  <path d="M73,13 v3" stroke="${P.ink}" stroke-width="1.1"/>
+  <path d="M68,12 L77,13" stroke="${P.ink}" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="88.5" cy="16.5" r="0.7" fill="${P.ink}"/>
+  <!-- claws -->
+  <path d="M73,55 l3,-1 M73,56 l3,1.5 M72,58 l2,2.5 M69,67 l3,0 M68,68 l2,2.5 M32,92 l-3,1 M46,92 l2,1.5 M65,91 l3,1" ${FINE} stroke-width="1.4"/>
+  <!-- golden belly plates and back spines -->
+  <path d="M58,46 C62,55 58,66 49,75" fill="none" stroke="${P.ink}" stroke-width="5"/>
+  <path d="M58,46 C62,55 58,66 49,75" fill="none" stroke="${P.goldMid}" stroke-width="3"/>
+  <path d="M58,50 l2.5,0 M59,55 l2.5,0.5 M58,60 l2.5,1 M56,65 l2,1.5 M53,70 l2,1.8" ${FINE}/>
+  <g fill="${P.gold}" stroke="${P.ink}" stroke-width="0.9" stroke-linejoin="round">
+    <path d="M52,32 l-4,-2 l3,-3 Z M51,39 l-4,-1 l3,-3 Z M42,50 l-4,0 l2,-4 Z M38,58 l-4,1 l2,-4 Z M37,66 l-4,2 l1,-4 Z"/>
   </g>
-  <!-- claws, tongue, eye, scales -->
-  <path d="M38,84 l-3,2 M41,84 l-1,3 M63,84 l-3,2 M66,84 l-1,3 M69,84 l2,2" ${FINE} stroke-width="1.5"/>
-  <path d="M91,28 L98,31 L95,31.5 L97,34" fill="none" stroke="${P.vermilion}" stroke-width="1.4" stroke-linecap="round"/>
-  <circle cx="80" cy="21.5" r="1.8" fill="${P.goldPale}" stroke="${P.ink}" stroke-width="0.8"/>
-  <circle cx="80.3" cy="21.5" r="0.8" fill="${P.ink}"/>
-  <path d="M40,58 q2,2 4,0 M46,56 q2,2 4,0 M52,57 q2,2 4,0 M43,63 q2,2 4,0 M49,63 q2,2 4,0 M55,62 q2,2 4,0" ${FINE}/>
-  <path d="M36,56 C42,50 50,49 58,50 M60,46 C64,40 67,34 71,29" ${HILITE}/>`;
+  <!-- scales -->
+  <path d="M43,55 q2,2 4,0 M48,52 q2,2 4,0 M44,61 q2,2 4,0 M49,58 q2,2 4,0 M45,67 q2,2 4,0 M55,33 q2,2 4,0 M54,39 q2,2 4,0" ${FINE}/>
+  <path d="M42,62 C41,56 44,49 49,45 M54,40 C54,33 56,28 60,24" ${HILITE}/>`;
 }
 
 export function pelican() {
@@ -318,14 +348,19 @@ export function manticore() {
   ${beast(P.vermilion, P.vermilionDark, 'paw')}
   <!-- shaggy golden mane -->
   <path d="M26,24 L30,28 L34,23 L36,30 L41,28 L39,35 L45,37 L39,41 L44,46 L37,47 L39,53 L32,50 L30,57 L26,51 L21,56 L20,50 L13,52 L16,46 L9,44 L14,39 L8,35 L15,33 L12,27 L19,29 L19,22 L24,28 Z" fill="${P.gold}" ${OUTLINE} stroke-width="1.6"/>
-  <!-- human face -->
-  <ellipse cx="25" cy="39.5" rx="8" ry="9" fill="${P.skin}" ${OUTLINE} stroke-width="1.6"/>
-  <circle cx="22" cy="37" r="1.5" fill="${P.lapisLight}" stroke="${P.ink}" stroke-width="0.6"/>
-  <circle cx="28.5" cy="37" r="1.5" fill="${P.lapisLight}" stroke="${P.ink}" stroke-width="0.6"/>
-  <path d="M20,34 l3.5,0.8 M30.5,34 l-3.5,0.8 M25,38 l-1,3 l2,0" ${FINE}/>
-  <!-- three rows of teeth -->
-  <path d="M20,43 C22,47 28,47 30,43 Z" fill="${P.white}" stroke="${P.ink}" stroke-width="1"/>
-  <path d="M20.5,43.5 l1,1.5 l1,-1.5 l1,1.5 l1,-1.5 l1,1.5 l1,-1.5 l1,1.5 l1,-1.5 l1,1.5 M21.5,45 l1,1 l1,-1 l1,1 l1,-1 l1,1 l1,-1 l1,1" ${FINE} stroke-width="0.6"/>
+  <!-- golden beard -->
+  <path d="M18,44 C19,52 23,57 25,58 C27,57 31,52 32,44 C28,47 22,47 18,44 Z" fill="${P.gold}" ${OUTLINE} stroke-width="1.4"/>
+  <path d="M22,48 l1,6 M25,48 l0,8 M28,48 l-1,6" ${FINE} stroke-width="0.7"/>
+  <!-- stern human face -->
+  <ellipse cx="25" cy="39" rx="7.5" ry="8.5" fill="${P.skin}" ${OUTLINE} stroke-width="1.6"/>
+  <path d="M19.8,37 Q22,35.3 24,37 Q22,38.2 19.8,37 Z M26,37 Q28,35.3 30.2,37 Q28,38.2 26,37 Z" fill="${P.white}" stroke="${P.ink}" stroke-width="0.6"/>
+  <circle cx="22" cy="37" r="0.9" fill="${P.lapis}"/><circle cx="28" cy="37" r="0.9" fill="${P.lapis}"/>
+  <path d="M19,34.2 L24,35.6 M31,34.2 L26,35.6" stroke="${P.ink}" stroke-width="1.3" stroke-linecap="round"/>
+  <path d="M25,37.5 L23.8,41.5 L26,41.5" ${FINE}/>
+  <!-- the mouth with three rows of teeth -->
+  <path d="M21.5,44 Q25,42.6 28.5,44 Q25,47.2 21.5,44 Z" fill="${P.vermilionDark}" stroke="${P.ink}" stroke-width="0.8"/>
+  <path d="M22.2,44 l0.8,1 l0.8,-1 l0.8,1 l0.8,-1 l0.8,1 l0.8,-1 l0.8,1 l0.8,-1" fill="none" stroke="${P.white}" stroke-width="0.7"/>
+  <path d="M23,45.4 l0.7,-0.8 l0.7,0.8 l0.7,-0.8 l0.7,0.8 l0.7,-0.8 l0.7,0.8 l0.7,-0.8" fill="none" stroke="${P.white}" stroke-width="0.6"/>
   <path d="M83,48 l3,-1 M87,40 l2.5,0 M86,30 l2.5,1 M80,22 l2,2" ${HILITE}/>`;
 }
 
@@ -381,13 +416,18 @@ export function amphisbaena() {
   const head = (flip) => `
   <g transform="${flip ? 'translate(100,0) scale(-1,1)' : ''}">
     <g ${OUTLINE} stroke-width="1.7">
-      <path d="M22,44 C16,34 12,28 14,22 C16,16 24,16 26,22 C28,28 28,36 30,44 Z" fill="${P.rose}"/>
-      <path d="M14,22 C10,20 6,22 5,26 L12,27 C9,30 10,33 13,32 C15,31 16,29 16,27 Z" fill="${P.rose}"/>
-      <path d="M20,18 L22,10 L24,18 Z" fill="${P.gold}"/>
+      <path d="M22,46 C16,36 12,30 13,24 C14,17 22,14 27,18 C30,22 29,32 31,44 Z" fill="${P.rose}"/>
+      <path d="M24,15 L29,5 L28.5,16 Z" fill="${P.gold}" stroke-width="1.2"/>
+      <path d="M19.5,14.5 L20.5,6 L23.5,14 Z" fill="${P.gold}" stroke-width="1.2"/>
+      <path d="M15,18 C18,13 25,12 28,16 L27,22 C24,24 20,24 17,25 L6,27.5 L11.5,23.5 L3,22 C7,19 11,18 15,18 Z" fill="${P.rose}"/>
     </g>
-    <circle cx="17" cy="21.5" r="1.7" fill="${P.goldPale}" stroke="${P.ink}" stroke-width="0.7"/>
-    <circle cx="16.8" cy="21.5" r="0.7" fill="${P.ink}"/>
-    <path d="M5.5,26.5 L1,25 M5.5,26.5 L1.5,28.5" stroke="${P.vermilion}" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M11.5,23.5 L3,22 L6,27.5 Z" fill="${P.vermilionDark}"/>
+    <path d="M6,22.3 l0.8,1.6 l0.8,-1.5 M8,26.6 l0.8,-1.5 l0.8,1.4" fill="${P.white}" stroke="${P.white}" stroke-width="0.6"/>
+    <path d="M17,18.5 Q19.5,16.8 22,18.5 Q19.5,20 17,18.5 Z" fill="${P.goldPale}" stroke="${P.ink}" stroke-width="0.7"/>
+    <path d="M19.5,17.3 v2.4" stroke="${P.ink}" stroke-width="0.9"/>
+    <path d="M16,16.5 L23,17" stroke="${P.ink}" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M4,24.5 L-1,23 M4,24.5 L-0.5,26.5" stroke="${P.vermilion}" stroke-width="1" stroke-linecap="round"/>
+    <path d="M17,30 q2,1.5 4,0 M18,36 q2,1.5 4,0 M20,42 q2,1.5 4,0" ${FINE} stroke-width="0.6"/>
   </g>`;
   return `
   <!-- legs -->

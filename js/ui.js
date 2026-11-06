@@ -1,10 +1,13 @@
 // Small DOM helpers shared by the screens.
 import { BOOKS } from './art/ornaments.js';
 import { CATEGORY_BOOK } from './data/items.js';
+import { lockPageZoom } from './touchguard.js';
 
 const $ = (id) => document.getElementById(id);
 
 export function showScreen(id) {
+  // The page itself may only zoom outside the rooms (the rooms have their own zoom).
+  lockPageZoom(id === 'screen-game');
   for (const s of document.querySelectorAll('.screen')) s.classList.toggle('active', s.id === id);
   window.scrollTo(0, 0);
 }

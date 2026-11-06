@@ -73,6 +73,38 @@ export function sceneDefs() {
       <rect width="60" height="16" fill="${W.wood}"/>
       <path d="M0,5 C15,3 30,7 60,4 M0,12 C20,14 40,10 60,12" stroke="${W.woodDark}" stroke-width="1.6" fill="none"/>
     </pattern>
+    <pattern id="sc-stars" width="90" height="70" patternUnits="userSpaceOnUse">
+      <rect width="90" height="70" fill="#1c2c66"/>
+      <path d="M20,14 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 l5,-2 Z M66,44 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 l5,-2 Z" fill="${P.goldMid}"/>
+      <circle cx="58" cy="12" r="1.6" fill="${P.goldPale}"/><circle cx="16" cy="54" r="1.4" fill="${P.goldPale}"/><circle cx="40" cy="34" r="1.1" fill="${P.goldPale}"/>
+    </pattern>
+    <pattern id="sc-glass-jewel" width="36" height="36" patternUnits="userSpaceOnUse">
+      <rect width="36" height="36" fill="#2b4fa8"/>
+      <path d="M18,0 L36,18 L18,36 L0,18 Z" fill="#b8322a"/>
+      <path d="M18,9 L27,18 L18,27 L9,18 Z" fill="#e8c35a"/>
+      <path d="M0,0 L9,9 M36,0 L27,9 M0,36 L9,27 M36,36 L27,27" stroke="#2f7d5b" stroke-width="5"/>
+      <path d="M18,0 L36,18 L18,36 L0,18 Z M18,9 L27,18 L18,27 L9,18 Z" fill="none" stroke="${W.iron}" stroke-width="2.2"/>
+    </pattern>
+    <radialGradient id="sc-torchlight" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffcf6a" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#ffb347" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffb347" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sc-arcane" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#b58cf0" stop-opacity="0.4"/>
+      <stop offset="0.7" stop-color="#7d4fd0" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#7d4fd0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sc-ceiling-shadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#140c06" stop-opacity="0.55"/>
+      <stop offset="0.35" stop-color="#140c06" stop-opacity="0.12"/>
+      <stop offset="0.6" stop-color="#140c06" stop-opacity="0"/>
+      <stop offset="1" stop-color="#140c06" stop-opacity="0.28"/>
+    </linearGradient>
+    <linearGradient id="sc-glassbeam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+    </linearGradient>
     <radialGradient id="sc-vignette" cx="0.5" cy="0.5" r="0.75">
       <stop offset="0.3" stop-color="#1a1008" stop-opacity="0.05"/>
       <stop offset="0.75" stop-color="#1a1008" stop-opacity="0.5"/>
@@ -100,7 +132,7 @@ export function wall(fill, floorY = 760, floorFill = 'url(#sc-tiles)') {
 
 export function archWindow(x, y, w, h, night = false) {
   const r = w / 2;
-  const glass = night ? 'url(#sc-glass-night)' : 'url(#sc-glass-day)';
+  const glass = night ? 'url(#sc-glass-night)' : 'url(#sc-glass-jewel)';
   const d = `M${x},${y + h} L${x},${y + r} Q${x},${y} ${x + r},${y - r * 0.35} Q${x + w},${y} ${x + w},${y + r} L${x + w},${y + h} Z`;
   return `
   <path d="${d}" fill="${P.stoneLight}" ${o(4)} transform="translate(0,0)" stroke-width="4"/>
@@ -142,8 +174,112 @@ export function banner(x, y, w, h, colour, diaper) {
   <path d="M${x - 10},${y} H${x + w + 10}" stroke="${W.woodDark}" stroke-width="10" stroke-linecap="round"/>
   <path d="M${x},${y} H${x + w} V${y + h} L${x + w / 2},${y + h - 40} L${x},${y + h} Z" fill="url(#${diaper})" ${o(3)}/>
   <path d="M${x + 12},${y + 12} H${x + w - 12} V${y + h - 30} L${x + w / 2},${y + h - 62} L${x + 12},${y + h - 30} Z" fill="none" stroke="${P.goldMid}" stroke-width="4"/>
-  <rect x="${x}" y="${y}" width="${w}" height="28" fill="${colour}" ${o(3)}/>`;
+  <rect x="${x}" y="${y}" width="${w}" height="28" fill="${colour}" ${o(3)}/>
+  ${fleur(x + w / 2, y + h * 0.45, w * 0.32)}`;
 }
+
+// Heraldic fleur-de-lis in gold.
+export function fleur(cx, cy, r) {
+  return `
+  <g transform="translate(${cx},${cy}) scale(${r / 30})" fill="${P.gold}" ${o(2)}>
+    <path d="M0,-30 C10,-18 10,-6 0,6 C-10,-6 -10,-18 0,-30 Z"/>
+    <path d="M-4,4 C-14,-8 -30,-6 -28,6 C-26,14 -16,12 -14,6 C-12,10 -8,10 -4,8 Z"/>
+    <path d="M4,4 C14,-8 30,-6 28,6 C26,14 16,12 14,6 C12,10 8,10 4,8 Z"/>
+    <rect x="-14" y="6" width="28" height="7" rx="2"/>
+    <path d="M-5,13 L5,13 L3,28 L-3,28 Z"/>
+  </g>`;
+}
+
+// A Gothic vaulted ceiling: pointed arches with a starry lapis vault above.
+export function vault(y = 120, bay = 200, rise = 90) {
+  let s = '';
+  for (let x0 = 0; x0 < 1600; x0 += bay) {
+    const x1 = x0 + bay, mid = x0 + bay / 2, top = y - rise;
+    s += `<path d="M${x0},-2 L${x1},-2 L${x1},${y} C${x1},${y - rise * 0.55} ${mid + bay * 0.22},${top + 8} ${mid},${top} C${mid - bay * 0.22},${top + 8} ${x0},${y - rise * 0.55} ${x0},${y} Z" fill="url(#sc-stars)"/>`;
+    const rib = `M${x0},${y} C${x0},${y - rise * 0.55} ${mid - bay * 0.22},${top + 8} ${mid},${top} C${mid + bay * 0.22},${top + 8} ${x1},${y - rise * 0.55} ${x1},${y}`;
+    s += `<path d="${rib}" fill="none" stroke="${P.ink}" stroke-width="16"/>`;
+    s += `<path d="${rib}" fill="none" stroke="${P.stoneLight}" stroke-width="11"/>`;
+    s += `<path d="${rib}" fill="none" stroke="${P.goldMid}" stroke-width="2.5"/>`;
+    s += `<path d="M${mid},${top - 4} L${mid},-2" stroke="${P.ink}" stroke-width="12"/><path d="M${mid},${top - 4} L${mid},-2" stroke="${P.stoneLight}" stroke-width="7"/>`;
+    s += `<circle cx="${mid}" cy="${top - 2}" r="9" fill="${P.gold}" ${o(2.5)}/>`;
+  }
+  for (let x0 = 0; x0 <= 1600; x0 += bay) {
+    s += `<path d="M${x0 - 18},${y} L${x0 + 18},${y} L${x0 + 10},${y + 26} L${x0 - 10},${y + 26} Z" fill="${P.stoneLight}" ${o(2.5)}/>`;
+    s += `<path d="M${x0 - 14},${y + 6} H${x0 + 14}" stroke="${P.goldMid}" stroke-width="3"/>`;
+  }
+  return s;
+}
+
+// A burning wall torch in an iron bracket, with its pool of warm light.
+export function torch(x, y) {
+  return `
+  <circle cx="${x}" cy="${y - 20}" r="230" fill="url(#sc-torchlight)"/>
+  <path d="M${x - 14},${y + 40} L${x},${y + 20} L${x + 14},${y + 40}" fill="none" stroke="${W.iron}" stroke-width="6" stroke-linejoin="round"/>
+  <rect x="${x - 18}" y="${y + 36}" width="36" height="12" rx="3" fill="${W.iron}" ${o(2)}/>
+  <path d="M${x - 7},${y + 22} L${x - 5},${y - 14} L${x + 5},${y - 14} L${x + 7},${y + 22} Z" fill="${W.woodDark}" ${o(2.5)}/>
+  <path d="M${x - 11},${y - 12} L${x + 11},${y - 12} L${x + 9},${y - 2} L${x - 9},${y - 2} Z" fill="${W.iron}" ${o(2)}/>
+  <path d="M${x},${y - 70} C${x + 8},${y - 52} ${x + 18},${y - 40} ${x + 12},${y - 22} C${x + 9},${y - 14} ${x - 9},${y - 14} ${x - 12},${y - 22} C${x - 18},${y - 36} ${x - 6},${y - 44} ${x - 4},${y - 56} C${x - 1},${y - 48} ${x + 2},${y - 50} ${x},${y - 70} Z" fill="${P.vermilion}" ${o(2)}/>
+  <path d="M${x},${y - 52} C${x + 5},${y - 40} ${x + 9},${y - 32} ${x + 6},${y - 22} C${x + 4},${y - 17} ${x - 4},${y - 17} ${x - 6},${y - 22} C${x - 8},${y - 30} ${x - 2},${y - 38} ${x},${y - 52} Z" fill="${P.ochre}"/>
+  <path d="M${x},${y - 38} C${x + 3},${y - 30} ${x + 4},${y - 25} ${x + 2},${y - 21} L${x - 2},${y - 21} C${x - 4},${y - 25} ${x - 2},${y - 31} ${x},${y - 38} Z" fill="${P.goldPale}"/>`;
+}
+
+// Soft coloured light, e.g. sunlight through stained glass falling on the floor.
+export function lightPool(cx, cy, rx, ry, colour, opacity = 0.22) {
+  return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${colour}" opacity="${opacity}"/>`;
+}
+
+// Drifting motes and wisps of the witch's lingering spell.
+export function spellMotes(rand, n, x0, x1, y0, y1) {
+  const cols = ['#b58cf0', '#8ef0b8', P.goldPale, '#d9c2ff'];
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const x = x0 + rand() * (x1 - x0), y = y0 + rand() * (y1 - y0), r = 3 + rand() * 5, c = cols[i % cols.length];
+    s += i % 3 === 0
+      ? `<path d="M${x},${y - r * 1.8} L${x + r * 0.4},${y - r * 0.4} L${x + r * 1.8},${y} L${x + r * 0.4},${y + r * 0.4} L${x},${y + r * 1.8} L${x - r * 0.4},${y + r * 0.4} L${x - r * 1.8},${y} L${x - r * 0.4},${y - r * 0.4} Z" fill="${c}" opacity="0.85"/>`
+      : `<circle cx="${x}" cy="${y}" r="${r * 0.55}" fill="${c}" opacity="0.7"/>`;
+  }
+  return s;
+}
+
+export function spellWisp(d, colour = '#b58cf0') {
+  return `<path d="${d}" fill="none" stroke="${colour}" stroke-width="5" stroke-linecap="round" opacity="0.25"/>
+  <path d="${d}" fill="none" stroke="${colour}" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 14" opacity="0.8"/>`;
+}
+
+// A glowing arcane circle: where the witch cast her spell.
+export function arcaneCircle(cx, cy, rx, ry) {
+  let runes = '';
+  for (let i = 0; i < 20; i++) {
+    const a = (i / 20) * Math.PI * 2, x = cx + Math.cos(a) * rx * 0.9, y = cy + Math.sin(a) * ry * 0.9;
+    runes += `<path d="M${(x - 5).toFixed(0)},${(y - 3).toFixed(0)} l5,6 l5,-6 M${x.toFixed(0)},${(y - 5).toFixed(0)} v10" stroke="#d9c2ff" stroke-width="2" fill="none"/>`;
+  }
+  return `
+  <ellipse cx="${cx}" cy="${cy}" rx="${rx * 1.25}" ry="${ry * 1.4}" fill="url(#sc-arcane)"/>
+  <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="#b58cf0" stroke-width="5" opacity="0.9"/>
+  <ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.8}" ry="${ry * 0.8}" fill="none" stroke="#b58cf0" stroke-width="2.5" stroke-dasharray="10 8"/>
+  <path d="M${cx - rx * 0.8},${cy} L${cx + rx * 0.8},${cy} M${cx},${cy - ry * 0.8} L${cx},${cy + ry * 0.8}" stroke="#b58cf0" stroke-width="2" opacity="0.7"/>
+  ${runes}`;
+}
+
+// An illuminated border around the whole scene, like the margin of a page.
+export function pageBorder(rand) {
+  let s = `
+  <rect x="7" y="7" width="1586" height="986" fill="none" stroke="${P.ink}" stroke-width="18"/>
+  <rect x="7" y="7" width="1586" height="986" fill="none" stroke="${P.goldMid}" stroke-width="11"/>
+  <rect x="7" y="7" width="1586" height="986" fill="none" stroke="${P.lapis}" stroke-width="4" stroke-dasharray="40 30"/>
+  <rect x="7" y="7" width="1586" height="986" fill="none" stroke="${P.vermilion}" stroke-width="4" stroke-dasharray="30 40" stroke-dashoffset="35"/>
+  <rect x="20" y="20" width="1560" height="960" fill="none" stroke="${P.ink}" stroke-width="2.5"/>`;
+  // ivy leaves along the frame
+  const leafAt = (x, y, rot) => `<path d="M0,0 C-6,-6 -6,-14 0,-18 C6,-14 6,-6 0,0 Z" transform="translate(${x},${y}) rotate(${rot})" fill="${P.verdigris}" ${o(1.5)}/>`;
+  for (let x = 80; x < 1560; x += 120) { s += leafAt(x, 17, -60 + rand() * 30) + leafAt(x + 50, 983, 120 + rand() * 30); }
+  for (let y = 90; y < 960; y += 130) { s += leafAt(17, y, 30 + rand() * 30) + leafAt(1583, y + 60, -150 + rand() * 30); }
+  // corner roundels
+  for (const [x, y] of [[16, 16], [1584, 16], [16, 984], [1584, 984]]) {
+    s += `<circle cx="${x}" cy="${y}" r="24" fill="${P.lapis}" ${o(3)}/><circle cx="${x}" cy="${y}" r="24" fill="none" stroke="${P.goldMid}" stroke-width="5"/>${fleur(x, y + 2, 13)}`;
+  }
+  return s;
+}
+
 
 export function beam(y, x0 = 0, x1 = 1600) {
   return `<rect x="${x0}" y="${y}" width="${x1 - x0}" height="34" fill="url(#sc-woodgrain)" ${o(3)}/>`;

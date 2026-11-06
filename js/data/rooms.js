@@ -10,18 +10,27 @@ function scriptorium() {
   const r = S.rng(11);
   const back = `
     ${S.wall('url(#sc-stone-warm)', 760, 'url(#sc-tiles)')}
+    ${S.vault(150, 200, 100)}
     ${S.archWindow(170, 130, 180, 420)}
     ${S.archWindow(1250, 130, 180, 420)}
-    <path d="M190,560 L340,560 L560,1000 L260,1000 Z" fill="url(#sc-sunbeam)"/>
+    <path d="M190,560 L340,560 L560,1000 L260,1000 Z" fill="url(#sc-glassbeam)"/>
+    <path d="M1270,560 L1420,560 L1300,1000 L1040,1000 Z" fill="url(#sc-glassbeam)"/>
     ${S.banner(430, 40, 90, 280, P.vermilion, 'mm-diaper-blue')}
+    ${S.banner(1115, 40, 90, 260, P.lapis, 'mm-diaper-red')}
     ${S.bookcase(560, 140, 480, 600, 4, r, [[0, 300, 4], [1, 0, 2], [2, 220, 3], [3, 330, 3]])}
     ${S.lectern(1090, 500)}
     ${S.desk(190, 560)}
+    ${S.lightPool(420, 900, 170, 45, '#e8c35a', 0.3)}
+    ${S.lightPool(330, 850, 90, 26, '#b8322a', 0.2)}
+    ${S.lightPool(1170, 900, 170, 45, '#2b4fa8', 0.2)}
     ${S.floorClutter(r, 60, 1520, 790, 950, 16)}
     ${S.stool(500, 800, -75)}
     ${S.inkpot(560, 820, true)}
-    ${S.bookPile(1240, 920, r, 3)}`;
-  const front = `${S.page(600, 905, 18, P.lapis)}`;
+    ${S.bookPile(1240, 920, r, 3)}
+    <rect x="0" y="0" width="1600" height="1000" fill="url(#sc-ceiling-shadow)"/>
+    ${S.spellWisp('M60,720 C280,560 520,760 760,620 S1200,540 1540,690')}
+    ${S.spellMotes(r, 28, 40, 1560, 170, 760)}`;
+  const front = `${S.page(600, 905, 18, P.lapis)}${S.pageBorder(S.rng(5))}`;
   return { back, front };
 }
 
@@ -29,21 +38,31 @@ function readingHall() {
   const r = S.rng(23);
   const back = `
     ${S.wall('url(#sc-stone-cool)', 780, 'url(#sc-tiles-blue)')}
+    ${S.vault(120, 200, 95)}
     ${S.roseWindow(800, 250, 170)}
     ${S.column(470, 30, 760)}
     ${S.column(1070, 30, 760)}
+    ${S.torch(610, 470)}
+    ${S.torch(990, 470)}
     ${S.bookcase(40, 120, 380, 650, 4, r, [[0, 120, 5], [1, 180, 4], [2, 0, 2], [3, 60, 6]])}
     ${S.bookcase(1180, 120, 380, 650, 4, r, [[0, 0, 3], [1, 60, 6], [2, 200, 3], [3, 0, 7]])}
     ${S.rug(470, 810, 660, 150)}
+    ${S.lightPool(800, 885, 330, 70, '#b8322a', 0.16)}
+    ${S.lightPool(690, 905, 150, 40, '#2b4fa8', 0.22)}
+    ${S.lightPool(930, 900, 150, 40, '#e8c35a', 0.25)}
     ${S.table(470, 612, 660)}
     ${S.closedBook(700, 586, 90, 26, 0, P.lapis)}
     ${S.openBook(1040, 596, 0, 0.7)}
     <path d="M745,600 C760,640 800,640 820,612" fill="none" stroke="${S.W.iron}" stroke-width="4" stroke-dasharray="7 4"/>
     ${S.floorClutter(r, 60, 1520, 820, 960, 18)}
-    ${S.hourglass(1450, 940, 0.9)}`;
+    ${S.hourglass(1450, 940, 0.9)}
+    <rect x="0" y="0" width="1600" height="1000" fill="url(#sc-ceiling-shadow)"/>
+    ${S.spellWisp('M440,140 C560,60 700,180 640,300 S780,520 980,420 S1160,200 1150,120', '#8ef0b8')}
+    ${S.spellMotes(r, 30, 40, 1560, 140, 780)}`;
   const front = `
     ${S.bench(520, 724, 560)}
-    ${S.bookPile(150, 950, r, 2)}`;
+    ${S.bookPile(150, 950, r, 2)}
+    ${S.pageBorder(S.rng(6))}`;
   return { back, front };
 }
 
@@ -51,9 +70,14 @@ function towerArchive() {
   const r = S.rng(37);
   const back = `
     ${S.wall('url(#sc-stone-dark)', 800, 'url(#sc-flags)')}
+    ${S.vault(150, 200, 100)}
     ${S.archWindow(1360, 170, 150, 360, true)}
     <g fill="#f7e08a"><circle cx="1395" cy="270" r="3"/><circle cx="1470" cy="380" r="2.5"/><circle cx="1410" cy="440" r="2"/></g>
+    <rect x="0" y="0" width="1600" height="1000" fill="#0e0818" opacity="0.4"/>
     ${S.staircase(40, 740, 8, 170, 70)}
+    <rect x="0" y="0" width="1600" height="1000" fill="#0e0818" opacity="0.18"/>
+    ${S.torch(490, 470)}
+    ${S.torch(1290, 330)}
     ${S.bookcase(560, 200, 420, 600, 3, r, [[0, 200, 3], [1, 0, 3], [2, 220, 4]])}
     ${S.jar(620, 386, 90, P.verdigris)}${S.jar(690, 386, 66, P.vermilion)}${S.jar(760, 586, 80, P.lapisLight)}
     ${S.jar(930, 786, 70, P.ochre)}
@@ -61,16 +85,21 @@ function towerArchive() {
     ${S.lantern(430, 210)}
     ${S.chest(1120, 650, 220, 150)}
     ${S.chest(1360, 700, 190, 110)}
+    ${S.arcaneCircle(800, 905, 320, 58)}
     ${S.floorClutter(r, 40, 1540, 830, 960, 24)}
     ${S.hourglass(1000, 880, 0.8)}
     ${S.beam(60)}
     ${S.cobweb(0, 94, 160)}
     ${S.cobweb(1600, 94, 160, true)}
-    <ellipse cx="800" cy="560" rx="700" ry="500" fill="url(#sc-candlelight)"/>`;
+    <ellipse cx="800" cy="560" rx="700" ry="500" fill="url(#sc-candlelight)"/>
+    ${S.spellWisp('M120,640 C300,520 420,700 640,560 S980,380 1100,520 S1320,700 1520,560')}
+    ${S.spellWisp('M700,880 C760,760 860,760 900,860', '#8ef0b8')}
+    ${S.spellMotes(r, 40, 40, 1560, 120, 980)}`;
   const front = `
     ${S.scroll(590, 978, -6, 110)}
     ${S.closedBook(1100, 910, 90, 60, 25, P.vermilionDark)}
-    <rect x="0" y="0" width="1600" height="1000" fill="url(#sc-vignette)"/>`;
+    <rect x="0" y="0" width="1600" height="1000" fill="url(#sc-vignette)"/>
+    ${S.pageBorder(S.rng(7))}`;
   return { back, front };
 }
 
@@ -91,7 +120,7 @@ export const ROOMS = [
       { id: 'candle-flame', x: 300, y: 598, size: 85, rot: -6 },
       { id: 'water-droplet', x: 650, y: 880, size: 78, rot: 0 },
       { id: 'mountain', x: 900, y: 370, size: 100, rot: 0 },
-      { id: 'cloud', x: 110, y: 80, size: 100, rot: 0 },
+      { id: 'cloud', x: 92, y: 330, size: 100, rot: 0 },
       { id: 'rose', x: 1500, y: 862, size: 110, rot: 5 },
       { id: 'lily', x: 1020, y: 850, size: 115, rot: 8 },
       { id: 'rosemary', x: 205, y: 555, size: 90, rot: 0 },
@@ -130,7 +159,7 @@ export const ROOMS = [
     scene: towerArchive,
     items: [
       { id: 'manticore', x: 232, y: 428, size: 76, rot: 0 },
-      { id: 'caladrius', x: 500, y: 30, size: 68, rot: 0 },
+      { id: 'caladrius', x: 500, y: 42, size: 68, rot: 0 },
       { id: 'yale', x: 1290, y: 612, size: 72, rot: -8 },
       { id: 'amphisbaena', x: 712, y: 884, size: 72, rot: 18 },
       { id: 'lightning', x: 1435, y: 340, size: 72, rot: 12 },

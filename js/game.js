@@ -215,7 +215,12 @@ export class Game {
       { transform: `translate(${dx}px, ${dy}px) scale(${endScale}) rotate(0deg)`, opacity: 0.2 },
     ], { duration: reduce ? 1 : 700, easing: 'cubic-bezier(.4,.1,.3,1)' });
     return new Promise((resolve) => {
-      anim.onfinish = () => { flyer.remove(); resolve(); };
+      let settled = false;
+      const done = () => { if (settled) return; settled = true; flyer.remove(); resolve(); };
+      anim.onfinish = done;
+      anim.oncancel = done;
+      // Never let a stalled animation leave the game unable to accept taps.
+      setTimeout(done, 1500);
     });
   }
 
