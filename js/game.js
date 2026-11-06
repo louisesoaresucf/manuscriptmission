@@ -5,6 +5,7 @@ import { itemById, CATEGORY_BOOK, wrongBookHint } from './data/items.js';
 import { BOOKS } from './art/ornaments.js';
 import { audio } from './audio.js';
 import * as ui from './ui.js';
+import { Interruptions, SHOO_BONUS } from './interruptions.js';
 
 export const HINT_COOLDOWN = 30; // seconds
 export const HINT_PENALTY = 10; // seconds added to the star time per hint
@@ -30,10 +31,12 @@ export class Game {
 
   start() {
     const svg = document.getElementById('scene');
-    this.scene = new Scene(svg, this.room);
-    this.viewport = new Viewport(svg, this.scene.world, this.scene.width, this.scene.height, {
+    this.scene = new Scene({ back: svg, front: document.getElementById('scene-front'), canvas: document.getElementById('relief') }, this.room);
+    this.viewport = new Viewport(svg, this.scene.worlds, this.scene.width, this.scene.height, {
       onTap: (pt) => this.tapScene(pt),
     });
+    this.scene.attach(this.viewport);
+    this.villain = new Interruptions(this);
     document.getElementById('room-name').textContent = this.room.name;
 
     const sig = { signal: this.abort.signal };
@@ -55,7 +58,9 @@ export class Game {
   destroy() {
     this.abort.abort();
     clearInterval(this.tick);
+    this.villain?.destroy();
     this.viewport?.destroy();
+    this.scene?.destroy();
     ui.hideToast();
   }
 
@@ -75,6 +80,7 @@ export class Game {
 
   updateHud() {
     if (this.done) return;
+    this.villain?.update(this.elapsed());
     document.getElementById('timer').textContent = ui.fmtTime(this.elapsed());
     const left = Math.ceil(this.hintReadyAt - this.elapsed());
     const btn = document.getElementById('btn-hint');
@@ -110,6 +116,7 @@ export class Game {
   // ---- selecting and placing ----
   tapScene(pt) {
     if (this.busy || this.done) return true;
+    if (this.villain?.hit(pt)) { this.villain.shoo(); return true; }
     const hit = this.scene.hitTest(pt, this.viewport.s);
     if (hit) {
       if (this.selected === hit.id) this.deselect();
@@ -126,6 +133,7 @@ export class Game {
     this.scene.setSelected(id, true);
     this.scene.clearRing();
     audio.pickUp();
+    audio.react(this.scene.react(id));
     document.getElementById('bookbar').classList.add('awaiting');
     ui.toast(`You found the ${itemById[id].name}! Which book does it belong in?`, 4000, this.awayFrom(id));
   }
@@ -168,7 +176,6 @@ export class Game {
     ui.hideToast();
 
     await this.fly(id, book);
-    this.scene.markFound(id);
     this.counts[book]++;
     this.updateCounts();
     audio.correct();
@@ -192,7 +199,7 @@ export class Game {
 
   // Animate a copy of the item from the scene into the book.
   fly(id, book) {
-    const from = this.scene.el(id).getBoundingClientRect();
+    const from = this.scene.pageRect(id);
     const to = document.querySelector(`.book-btn[data-book="${book}"] svg`).getBoundingClientRect();
     const size = Math.max(40, Math.min(from.width, from.height));
     const flyer = document.createElement('div');
@@ -204,7 +211,7 @@ export class Game {
       top: `${from.top + from.height / 2 - size / 2}px`,
     });
     document.body.appendChild(flyer);
-    this.scene.el(id).classList.add('found');
+    this.scene.markFound(id);
     const dx = to.left + to.width / 2 - (from.left + from.width / 2);
     const dy = to.top + to.height / 2 - (from.top + from.height / 2);
     const endScale = Math.max(0.2, (to.width * 0.6) / size);
@@ -252,9 +259,11 @@ export class Game {
     this.done = true;
     clearInterval(this.tick);
     const time = this.elapsed();
-    const scored = time + this.hints * HINT_PENALTY;
+    const shoos = this.villain?.shoos || 0;
+    this.villain?.destroy();
+    const scored = Math.max(0, time + this.hints * HINT_PENALTY - shoos * SHOO_BONUS);
     const [three, two] = this.room.stars;
     const stars = scored <= three ? 3 : scored <= two ? 2 : 1;
-    this.onComplete({ time, hints: this.hints, scored, stars });
+    this.onComplete({ time, hints: this.hints, shoos, scored, stars });
   }
 }

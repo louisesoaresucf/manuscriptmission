@@ -11,6 +11,8 @@ const BASE = process.env.BASE_URL || 'http://localhost:8765';
   const b = await chromium.launch();
   const ctx = await b.newContext({ ...devices[DEV] });
   const p = await ctx.newPage();
+  // FORCE_2D=1 tests the flat-illustration fallback used when WebGL is missing.
+  if (process.env.FORCE_2D) await p.addInitScript(() => { window.__mmForce2D = true; });
   const errs = [];
   const fail = (m) => { errs.push(m); console.log('FAIL', m); };
   p.on('pageerror', e => fail('pageerror ' + e.message));

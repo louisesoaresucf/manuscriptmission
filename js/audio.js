@@ -2,6 +2,8 @@
 // A plucked "lute" (Karplus-Strong), bells in D Dorian, a soft drone and a
 // slow modal melody. Audio starts on the first tap (required by iOS).
 
+import { TUNE, notesOf, freq } from './music.js';
+
 const DORIAN = [0, 2, 3, 5, 7, 9, 10]; // D Dorian intervals
 const D3 = 146.83;
 
@@ -35,7 +37,7 @@ class Audio {
     this.sfx.gain.value = 0.9;
     this.sfx.connect(this.master);
     this.music = this.ctx.createGain();
-    this.music.gain.value = 0.28;
+    this.music.gain.value = 0.55;
     this.music.connect(this.master);
   }
 
@@ -157,44 +159,264 @@ class Audio {
     src.start(t);
   }
 
+  // ---- the illustrations' own voices when tapped ----
+  react(kind) {
+    if (!this.ctx || !kind) return;
+    const f = (d, o = 1) => noteFreq(d, o);
+    switch (kind) {
+      case 'roar': this.growl(70, 0.9, 0.5); break;
+      case 'screech': this.sweep(1400, 900, 0.35, 'sawtooth', 0.12); break;
+      case 'neigh': this.sweep(700, 420, 0.6, 'sawtooth', 0.1, 9); break;
+      case 'flap': this.noiseBursts(4, 0.11, 900, 0.25); break;
+      case 'hiss': this.noiseBursts(1, 0.7, 5000, 0.18, 'highpass'); break;
+      case 'sing': [4, 6, 7, 9].forEach((d, i) => this.bell(f(d, 2), i * 0.18, 0.08)); break;
+      case 'chirp': [0, 0.12, 0.24].forEach((w) => this.sweep(2200, 3200, 0.07, 'sine', 0.12, 0, w)); break;
+      case 'crow': this.sweep(600, 900, 0.5, 'square', 0.06, 6); break;
+      case 'fire': this.noiseBursts(6, 0.12, 1200, 0.18); break;
+      case 'splash': this.noiseBursts(1, 0.45, 2500, 0.3); [7, 9].forEach((d, i) => this.bell(f(d, 2), 0.05 + i * 0.06, 0.06)); break;
+      case 'bubble': [0, 2, 4, 2, 5].forEach((d, i) => this.sweep(300 + d * 60, 600 + d * 80, 0.08, 'sine', 0.12, 0, i * 0.11)); break;
+      case 'rumble': this.growl(45, 1.0, 0.45); break;
+      case 'wind': this.noiseBursts(1, 1.3, 700, 0.3, 'bandpass', true); break;
+      case 'thunder': this.growl(38, 1.2, 0.6); this.noiseBursts(1, 0.2, 3000, 0.25); break;
+      case 'chime': [0, 4, 7, 11].forEach((d, i) => this.bell(f(d, 2), i * 0.09, 0.09)); break;
+      case 'twinkle': [7, 9, 11, 14].forEach((d, i) => this.bell(f(d, 2), i * 0.07, 0.07)); break;
+      case 'magnet': this.sweep(220, 880, 0.5, 'triangle', 0.1); break;
+      case 'scream': this.sweep(900, 1600, 0.6, 'sawtooth', 0.09, 14); break;
+      case 'rustle': this.noiseBursts(3, 0.12, 3500, 0.14, 'highpass'); break;
+      default: break;
+    }
+  }
+
+  // The villains: a warning, their mischief, and their retreat when shooed.
+  villain(kind, moment) {
+    if (!this.ctx) return;
+    if (moment === 'shoo') {
+      [7, 4, 2, 0].forEach((d, i) => this.pluck(noteFreq(d, 1), i * 0.07, 0.35));
+      return;
+    }
+    if (kind === 'broom') {
+      if (moment === 'warn') this.noiseBursts(5, 0.28, 2600, 0.22, 'bandpass', true);
+      else this.noiseBursts(8, 0.18, 1800, 0.25, 'bandpass', true);
+    } else if (kind === 'owl') {
+      const hoot = (when, f) => this.sweep(f, f * 0.92, 0.32, 'sine', 0.2, 0, when);
+      if (moment === 'warn') { hoot(0, 392); hoot(0.45, 330); hoot(0.95, 330); }
+      else { this.noiseBursts(5, 0.12, 900, 0.25); hoot(0.5, 349); }
+    } else if (kind === 'witch') {
+      if (moment === 'warn') [0, 0.16, 0.32, 0.48, 0.64].forEach((w, i) => this.sweep(780 - i * 40, 520 - i * 30, 0.13, 'sawtooth', 0.07, 11, w));
+      else { this.sweep(200, 1800, 0.5, 'sawtooth', 0.08); [0, 3, 6, 9].forEach((d, i) => this.bell(noteFreq(d, 2), 0.2 + i * 0.06, 0.07)); }
+    }
+  }
+
+  sweep(from, to, dur, type = 'sine', gain = 0.12, vibrato = 0, when = 0) {
+    const t = this.ctx.currentTime + when;
+    const osc = this.ctx.createOscillator();
+    osc.type = type;
+    osc.frequency.setValueAtTime(from, t);
+    osc.frequency.exponentialRampToValueAtTime(to, t + dur);
+    if (vibrato) {
+      const lfo = this.ctx.createOscillator();
+      const lg = this.ctx.createGain();
+      lfo.frequency.value = vibrato;
+      lg.gain.value = from * 0.05;
+      lfo.connect(lg).connect(osc.frequency);
+      lfo.start(t); lfo.stop(t + dur);
+    }
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 3000;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(lp).connect(g).connect(this.sfx);
+    osc.start(t);
+    osc.stop(t + dur + 0.05);
+  }
+
+  growl(freq, dur, gain) {
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq * 1.4, t);
+    osc.frequency.exponentialRampToValueAtTime(freq, t + dur);
+    const lfo = this.ctx.createOscillator();
+    const lg = this.ctx.createGain();
+    lfo.frequency.value = 23;
+    lg.gain.value = gain * 0.6;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    lfo.connect(lg).connect(g.gain);
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 600;
+    osc.connect(lp).connect(g).connect(this.sfx);
+    osc.start(t); lfo.start(t);
+    osc.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+  }
+
+  noiseBursts(n, len, freq, gain, type = 'bandpass', swell = false) {
+    const sr = this.ctx.sampleRate;
+    for (let k = 0; k < n; k++) {
+      const t = this.ctx.currentTime + k * len * 0.9;
+      const buf = this.ctx.createBuffer(1, Math.floor(sr * len), sr);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) {
+        const x = i / d.length;
+        d[i] = (Math.random() * 2 - 1) * (swell ? Math.sin(Math.PI * x) : Math.pow(1 - x, 2));
+      }
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      const f = this.ctx.createBiquadFilter();
+      f.type = type;
+      f.frequency.value = freq;
+      const g = this.ctx.createGain();
+      g.gain.value = gain;
+      src.connect(f).connect(g).connect(this.sfx);
+      src.start(t);
+    }
+  }
+
   // ---- music: a drone on D and A with a wandering Dorian melody ----
+  // A long, cathedral-like reverb, generated rather than recorded.
+  reverb() {
+    if (this.verb) return this.verb;
+    const sr = this.ctx.sampleRate, len = Math.floor(sr * 3.2);
+    const ir = this.ctx.createBuffer(2, len, sr);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2) * (i < sr * 0.012 ? i / (sr * 0.012) : 1);
+    }
+    const conv = this.ctx.createConvolver();
+    conv.buffer = ir;
+    const wet = this.ctx.createGain();
+    wet.gain.value = 0.55;
+    conv.connect(wet).connect(this.music);
+    this.verb = conv;
+    return conv;
+  }
+
+  // A breathy, recorder-like voice: sine with a little body and breath noise.
+  recorder(f, when, dur, gain = 0.2) {
+    const t = this.ctx.currentTime + when;
+    const out = this.ctx.createGain();
+    out.gain.setValueAtTime(0.0001, t);
+    out.gain.exponentialRampToValueAtTime(gain, t + 0.07);
+    out.gain.setValueAtTime(gain * 0.85, t + Math.max(0.08, dur - 0.12));
+    out.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05);
+    const o1 = this.ctx.createOscillator();
+    o1.frequency.value = f;
+    const o2 = this.ctx.createOscillator();
+    o2.type = 'triangle';
+    o2.frequency.value = f * 2;
+    const g2 = this.ctx.createGain();
+    g2.gain.value = 0.12;
+    // gentle vibrato that blooms after the attack
+    const lfo = this.ctx.createOscillator();
+    lfo.frequency.value = 5.2;
+    const lg = this.ctx.createGain();
+    lg.gain.setValueAtTime(0, t);
+    lg.gain.linearRampToValueAtTime(f * 0.004, t + Math.min(0.4, dur));
+    lfo.connect(lg);
+    lg.connect(o1.frequency);
+    lg.connect(o2.frequency);
+    o1.connect(out);
+    o2.connect(g2).connect(out);
+    // breath
+    const sr = this.ctx.sampleRate, n = Math.floor(sr * (dur + 0.1));
+    const buf = this.ctx.createBuffer(1, n, sr);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const br = this.ctx.createBufferSource();
+    br.buffer = buf;
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = f * 2;
+    bp.Q.value = 2;
+    const bg = this.ctx.createGain();
+    bg.gain.value = 0.05;
+    br.connect(bp).connect(bg).connect(out);
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 3200;
+    out.connect(lp);
+    lp.connect(this.music);
+    lp.connect(this.reverb());
+    for (const node of [o1, o2, lfo, br]) { node.start(t); node.stop(t + dur + 0.1); }
+  }
+
+  frameDrum(when, gain = 0.12) {
+    const t = this.ctx.currentTime + when;
+    const osc = this.ctx.createOscillator();
+    osc.frequency.setValueAtTime(110, t);
+    osc.frequency.exponentialRampToValueAtTime(55, t + 0.25);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+    osc.connect(g);
+    g.connect(this.music);
+    g.connect(this.reverb());
+    osc.start(t);
+    osc.stop(t + 0.45);
+  }
+
+  // ---- music: an estampie for recorder, harp and drone (see music.js) ----
   startMusic() {
     if (!this.ctx || this.musicTimer) return;
     const t = this.ctx.currentTime;
-    this.drone = [];
-    for (const f of [D3 / 2, (D3 * 3) / 4]) {
+    this.reverb();
+    // Drone on D and A that breathes slowly, like a hurdy-gurdy far away.
+    for (const [f, g0] of [[73.42, 0.06], [110, 0.045], [146.83, 0.025]]) {
       const osc = this.ctx.createOscillator();
       osc.type = 'sawtooth';
       osc.frequency.value = f;
       const lp = this.ctx.createBiquadFilter();
       lp.type = 'lowpass';
-      lp.frequency.value = 380;
+      lp.frequency.value = 420;
       const g = this.ctx.createGain();
       g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.07, t + 3);
+      g.gain.linearRampToValueAtTime(g0, t + 4);
       const lfo = this.ctx.createOscillator();
-      lfo.frequency.value = 0.09 + Math.random() * 0.05;
-      const lfoGain = this.ctx.createGain();
-      lfoGain.gain.value = 0.025;
-      lfo.connect(lfoGain).connect(g.gain);
-      osc.connect(lp).connect(g).connect(this.music);
+      lfo.frequency.value = 0.07 + Math.random() * 0.05;
+      const lg = this.ctx.createGain();
+      lg.gain.value = g0 * 0.4;
+      lfo.connect(lg).connect(g.gain);
+      osc.connect(lp).connect(g);
+      g.connect(this.music);
+      g.connect(this.reverb());
       osc.start(t);
       lfo.start(t);
-      this.drone.push(osc, lfo, g);
     }
-    let degree = 7;
-    const phrase = () => {
-      // A gentle random walk, resting now and then.
-      const beat = 0.62;
-      for (let i = 0; i < 8; i++) {
-        if (Math.random() < 0.18) continue;
-        degree = Math.max(3, Math.min(13, degree + [-2, -1, -1, 1, 1, 2, 0][Math.floor(Math.random() * 7)]));
-        this.pluck(noteFreq(degree, 0), i * beat, 0.32, this.music);
-        if (i % 4 === 0) this.pluck(noteFreq(degree - 7, 0), i * beat, 0.18, this.music);
+    // The tune, scheduled a little ahead of time so it never stutters.
+    const notes = notesOf(TUNE);
+    const eighth = 60 / TUNE.bpm;
+    let i = 0, beat = 0;
+    let nextAt = this.ctx.currentTime + 3;
+    const schedule = () => {
+      while (nextAt < this.ctx.currentTime + 0.6) {
+        const [deg, len] = notes[i];
+        const when = nextAt - this.ctx.currentTime;
+        const dur = len * eighth;
+        if (deg !== null) this.recorder(freq(deg), when, dur * 0.95);
+        // Harp: an open fifth arpeggio at the start of each 6/8 bar.
+        for (let b = 0; b < len; b++) {
+          if ((beat + b) % 6 === 0) {
+            const at = when + b * eighth;
+            this.pluck(freq(-7), at, 0.22, this.music);
+            this.pluck(freq(-3), at + eighth, 0.16, this.music);
+            this.pluck(freq(0), at + eighth * 2, 0.14, this.music);
+            this.frameDrum(at, 0.07);
+          }
+        }
+        beat += len;
+        nextAt += dur;
+        i++;
+        if (i >= notes.length) { i = 0; beat = 0; nextAt += eighth * 12; }
       }
     };
-    phrase();
-    this.musicTimer = setInterval(phrase, 0.62 * 8 * 1000 + 600);
+    schedule();
+    this.musicTimer = setInterval(schedule, 150);
   }
 }
 

@@ -9,9 +9,11 @@ export function candleFlame() {
   ${dotRing(50, 30, 26, 28, 1.1)}
   <g ${OUTLINE}>
     <!-- flame: three tongues of vermilion, ochre and gold -->
+    <g data-part="flame" data-pivot="50,47">
     <path d="M50,4 C56,14 67,21 65,34 C64,42 58,48 50,48 C42,48 36,42 35,34 C34,26 41,23 43,14 C46,20 48,21 48.5,17 C49,13 47.5,9 50,4 Z" fill="${P.vermilion}"/>
     <path d="M50,15 C54,23 60,28 58.5,36 C57.5,41.5 54,45 50,45 C46,45 42.5,41.5 42,36 C41.5,30 46,28 47,23 C48.5,26 49.5,24 50,15 Z" fill="${P.ochre}" stroke-width="1.2"/>
     <path d="M50,26 C53,31 55.5,34.5 54.5,38.5 C53.8,41.3 52,42.5 50,42.5 C48,42.5 46.2,41.3 45.6,38.5 C45,34.5 48,31.5 50,26 Z" fill="${P.goldPale}" stroke-width="1"/>
+    </g>
     <!-- candle -->
     <rect x="42" y="48" width="16" height="29" fill="${P.white}"/>
     <path d="M42,48 L58,48 L58,53 C57,53 56.5,59 55,59 C53.5,59 53.5,53 52.5,52.5 C51,52.5 51,56 49.5,56 C48,56 47.5,51.5 45.5,51.5 C44,51.5 43.5,55 42,55 Z" fill="${P.vellum}" stroke-width="1.2"/>
@@ -24,9 +26,11 @@ export function candleFlame() {
   <!-- wick -->
   <path d="M50,43 L50,48" stroke="${P.ink}" stroke-width="1.6" stroke-linecap="round"/>
   <!-- flame highlights and flickers -->
+  <g data-part="flame" data-pivot="50,47">
   <path d="M39,33 C39,27 42,24 44,19" ${HILITE}/>
   <path d="M60,26 C62,29 63,32 62.5,36" ${HILITE}/>
   <path d="M30,22 q-3,-4 0,-8 M70,22 q3,-4 0,-8 M27,34 q-4,-2 -5,-6 M73,34 q4,-2 5,-6" fill="none" stroke="${P.vermilion}" stroke-width="1.4" stroke-linecap="round"/>
+  </g>
   <!-- candle wax shading -->
   <path d="M45,58 L45,75" ${FINE}/>
   <path d="M55,62 L55,75" stroke="${P.parchment}" stroke-width="2" fill="none"/>
@@ -73,10 +77,12 @@ export function fountain() {
   return `
   ${halo(50, 46, 40)}
   <!-- jets of water -->
+  <g data-part="jets" data-pivot="50,50">
   ${tube('M50,22 C42,10 30,16 26,34', P.lapisLight, 2.2)}
   ${tube('M50,22 C58,10 70,16 74,34', P.lapisLight, 2.2)}
   ${tube('M44,50 C34,48 26,54 22,64', P.lapisLight, 2)}
   ${tube('M56,50 C66,48 74,54 78,64', P.lapisLight, 2)}
+  </g>
   <g ${OUTLINE}>
     <!-- lower basin -->
     <path d="M14,64 L86,64 C84,74 70,80 50,80 C30,80 16,74 14,64 Z" fill="${P.stoneLight}"/>
@@ -142,10 +148,12 @@ export function lodestone() {
   return `
   ${halo(50, 50, 40)}
   <!-- iron needles leaping to the stone -->
+  <g data-part="needles" data-pivot="50,50">
   ${tube('M20,22 L34,32', P.stoneDark, 1.4)}
   ${tube('M50,10 L50,24', P.stoneDark, 1.4)}
   ${tube('M82,26 L68,34', P.stoneDark, 1.4)}
   <circle cx="20" cy="22" r="1.6" fill="${P.stoneDark}"/><circle cx="50" cy="10" r="1.6" fill="${P.stoneDark}"/><circle cx="82" cy="26" r="1.6" fill="${P.stoneDark}"/>
+  </g>
   <!-- iron key stuck to its side -->
   <g ${OUTLINE} stroke-width="1.4">
     <circle cx="84" cy="64" r="5" fill="none" stroke="${P.ink}" stroke-width="4"/>
@@ -175,16 +183,20 @@ export function cloud() {
   <path d="M22,64 C30,66 40,66 46,64 M54,66 C62,68 72,66 78,62" fill="none" stroke="${P.lapisLight}" stroke-width="1.3" stroke-linecap="round"/>
   <!-- little birds -->
   <path d="M30,24 q3,-3 6,0 q3,-3 6,0 M60,18 q2.5,-2.5 5,0 q2.5,-2.5 5,0" fill="none" stroke="${P.ink}" stroke-width="1.3" stroke-linecap="round"/>
-  <path d="M20,84 l0,4 M30,82 l-1,5 M70,82 l1,5 M80,84 l0,4" stroke="${P.lapisLight}" stroke-width="1.5" stroke-linecap="round"/>`;
+  <g data-part="rain" data-pivot="50,84">
+  <path d="M20,84 l0,4 M30,82 l-1,5 M70,82 l1,5 M80,84 l0,4" stroke="${P.lapisLight}" stroke-width="1.5" stroke-linecap="round"/>
+  </g>`;
 }
 
 export function windFace() {
   return `
   ${halo(50, 50, 40, P.sky)}
   <!-- streams of breath -->
+  <g data-part="wind" data-pivot="58,58">
   <g fill="none" stroke-linecap="round">
     <path d="M58,52 C70,48 80,50 92,44 M58,58 C72,58 82,62 94,58 M58,64 C70,68 78,74 88,74" stroke="${P.ink}" stroke-width="4"/>
     <path d="M58,52 C70,48 80,50 92,44 M58,58 C72,58 82,62 94,58 M58,64 C70,68 78,74 88,74" stroke="${P.white}" stroke-width="2"/>
+  </g>
   </g>
   <!-- cloud hair -->
   <g ${OUTLINE} stroke-width="1.6" fill="${P.white}">
@@ -192,13 +204,15 @@ export function windFace() {
     <circle cx="18" cy="54" r="8"/><circle cx="24" cy="70" r="9"/><circle cx="38" cy="78" r="8"/>
   </g>
   <!-- puffed-cheek face -->
+  <g data-part="face" data-pivot="38,54">
   <ellipse cx="38" cy="54" rx="18" ry="20" fill="${P.skin}" ${OUTLINE}/>
   <circle cx="44" cy="62" r="7" fill="${P.rose}" opacity="0.35"/>
   <path d="M30,44 q4,-3 8,0 M42,44 q4,-3 8,0" ${FINE} stroke-width="1.3"/>
   <circle cx="34" cy="48" r="1.5" fill="${P.ink}"/><circle cx="46" cy="48" r="1.5" fill="${P.ink}"/>
   <path d="M40,50 C42,54 42,56 40,57" ${FINE}/>
   <ellipse cx="54" cy="60" rx="3.4" ry="2.6" fill="${P.vermilion}" stroke="${P.ink}" stroke-width="1.2"/>
-  <path d="M26,50 C26,58 28,64 32,68" ${HILITE}/>`;
+  <path d="M26,50 C26,58 28,64 32,68" ${HILITE}/>
+  </g>`;
 }
 
 export function starMoon() {
@@ -207,13 +221,17 @@ export function starMoon() {
   <circle cx="50" cy="50" r="36" fill="${P.lapis}" ${OUTLINE}/>
   ${dotRing(50, 50, 32, 30, 0.8, P.goldPale)}
   <!-- crescent moon with a sleepy face -->
+  <g data-part="moon" data-pivot="40,50">
   <path d="M46,20 C30,24 22,40 26,56 C30,72 46,80 60,76 C46,72 38,58 40,44 C42,32 46,24 46,20 Z" fill="${P.gold}" ${OUTLINE}/>
   <path d="M33,46 q3,2 6,0" ${FINE} stroke-width="1.2"/>
   <path d="M36,58 q2,2 4,1" ${FINE} stroke-width="1.2"/>
   <path d="M30,38 C30,32 34,27 39,25" ${HILITE}/>
+  </g>
   <!-- eight-pointed star -->
+  <g data-part="star" data-pivot="67,45.5">
   <path d="M68,30 L71,38 L79,35 L74,42 L82,46 L74,49 L78,57 L70,52 L67,60 L64,52 L56,56 L60,49 L52,46 L60,42 L56,35 L64,38 Z" fill="${P.goldPale}" ${OUTLINE} stroke-width="1.4"/>
   <circle cx="67" cy="45.5" r="2.4" fill="${P.vermilion}" stroke="${P.ink}" stroke-width="0.8"/>
+  </g>
   <g fill="${P.goldPale}"><circle cx="70" cy="70" r="1.6"/><circle cx="58" cy="22" r="1.3"/><circle cx="80" cy="62" r="1.2"/></g>`;
 }
 
@@ -222,11 +240,13 @@ export function sun() {
   return `
   ${halo(50, 50, 42)}
   <!-- straight and wavy rays, alternating -->
+  <g data-part="rays" data-pivot="50,50">
   ${rays(50, 50, 22, 40, 12, `stroke="${P.ink}" stroke-width="5" stroke-linecap="round"`)}
   ${rays(50, 50, 22, 40, 12, `stroke="${P.vermilion}" stroke-width="2.6" stroke-linecap="round"`)}
   <g transform="rotate(15 50 50)">
     ${rays(50, 50, 22, 34, 12, `stroke="${P.ink}" stroke-width="4.4" stroke-linecap="round"`)}
     ${rays(50, 50, 22, 34, 12, `stroke="${P.goldPale}" stroke-width="2.2" stroke-linecap="round"`)}
+  </g>
   </g>
   <circle cx="50" cy="50" r="22" fill="${P.gold}" ${OUTLINE}/>
   <!-- calm face -->

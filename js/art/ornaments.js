@@ -1,6 +1,7 @@
 // Book covers, borders and other decoration.
 import { P, OUTLINE, FINE, HILITE, dotRing } from './defs.js';
 import { bookSpine, rng, W } from './scenery.js';
+import { villainDefs, witchFigure, witchRiding, broom } from './villains.js';
 
 export const BOOKS = {
   bestiary: { name: 'Bestiary', leather: P.vermilion, dark: P.vermilionDark, diaper: 'mm-diaper-blue' },
@@ -297,7 +298,9 @@ export function storyPanel(kind) {
       <rect x="0" y="222" width="400" height="38" fill="#120c1c" opacity="0.55"/>
       ${flying}
       <path d="M90,60 C150,20 260,20 320,70" fill="none" stroke="#b58cf0" stroke-width="1.6" stroke-dasharray="2 6" stroke-linecap="round" opacity="0.8"/>
-      ${witch(200, 140, 0.62)}`, '#120c1c');
+      ${villainDefs()}
+      ${broom(318, 224, 0.62, 14)}
+      ${witchFigure(196, 140, 0.62, { glory: true })}`, '#120c1c');
   }
   if (kind === 'escape') {
     const r = rng(17);
@@ -333,7 +336,9 @@ export function storyPanel(kind) {
     <g fill="${P.goldPale}"><circle cx="172" cy="40" r="1.4"/><circle cx="230" cy="36" r="1.2"/><circle cx="226" cy="104" r="1.2"/></g>
     <circle cx="204" cy="70" r="30" fill="#f4e7b8"/>
     <circle cx="204" cy="70" r="30" fill="none" stroke="${P.goldMid}" stroke-width="1.5"/>
-    ${witchFlying(206, 76, 0.5)}
+    ${villainDefs()}
+    <clipPath id="fin-window"><path d="M156,124 L156,52 Q156,22 200,14 Q244,22 244,52 L244,124 Z"/></clipPath>
+    <g clip-path="url(#fin-window)">${witchRiding(190, 90, 0.56)}</g>
     <path d="M156,124 L156,52 Q156,22 200,14 Q244,22 244,52 L244,124 Z" fill="none" stroke="${P.stoneLight}" stroke-width="6"/>
     <circle cx="200" cy="170" r="60" fill="url(#mm-halo)"/>
     <use href="#book-bestiary" x="140" y="140" width="40" height="52"/>
