@@ -189,24 +189,249 @@ class Audio {
     }
   }
 
-  // The villains: a warning, their mischief, and their retreat when shooed.
+  // ---- the villains ----
+  // A warning before each visit, sounds that follow the villain while it is in
+  // the room, its mischief, and its retreat when shooed.
   villain(kind, moment) {
     if (!this.ctx) return;
+    const out = this.villainBus();
     if (moment === 'shoo') {
-      [7, 4, 2, 0].forEach((d, i) => this.pluck(noteFreq(d, 1), i * 0.07, 0.35));
+      [7, 4, 2, 0].forEach((d, i) => this.pluck(noteFreq(d, 1), i * 0.07, 0.3));
+      if (kind === 'broom') { this.swish(0, 0.35, 1200, 4200, 0.3, 0, out); this.swish(0.3, 0.3, 3000, 5000, 0.15, 0.8, out); }
+      if (kind === 'owl') { this.hoot(0, 520, 0.12, 0.2, out); this.hoot(0.14, 540, 0.12, 0.2, out); this.hoot(0.28, 500, 0.16, 0.18, out); this.wingbeat(0.1, 0.25, -0.6, out); this.wingbeat(0.4, 0.18, -0.9, out); }
+      if (kind === 'witch') { this.syllable(0, 300, 210, 0.32, 'u', 0.22, out); this.cackle(0.45, 0.6, out); }
       return;
     }
     if (kind === 'broom') {
-      if (moment === 'warn') this.noiseBursts(5, 0.28, 2600, 0.22, 'bandpass', true);
-      else this.noiseBursts(8, 0.18, 1800, 0.25, 'bandpass', true);
+      if (moment === 'warn') [0, 0.55, 1.1].forEach((w, i) => this.swish(w, 0.42, i % 2 ? 2800 : 900, i % 2 ? 900 : 2800, 0.16 + i * 0.07, i % 2 ? 0.4 : -0.4, out));
+      else { this.swish(0, 0.6, 600, 4000, 0.4, 0, out); this.scatter(0.25, out); }
     } else if (kind === 'owl') {
-      const hoot = (when, f) => this.sweep(f, f * 0.92, 0.32, 'sine', 0.2, 0, when);
-      if (moment === 'warn') { hoot(0, 392); hoot(0.45, 330); hoot(0.95, 330); }
-      else { this.noiseBursts(5, 0.12, 900, 0.25); hoot(0.5, 349); }
+      if (moment === 'warn') { this.hoot(0, 410, 0.42, 0.26, out); this.hoot(0.75, 380, 0.16, 0.22, out); this.hoot(0.95, 360, 0.7, 0.28, out); }
+      else { this.hoot(0, 390, 0.5, 0.24, out); [0.2, 0.55, 0.9].forEach((w) => this.wingbeat(w, 0.3, 0, out)); }
     } else if (kind === 'witch') {
-      if (moment === 'warn') [0, 0.16, 0.32, 0.48, 0.64].forEach((w, i) => this.sweep(780 - i * 40, 520 - i * 30, 0.13, 'sawtooth', 0.07, 11, w));
-      else { this.sweep(200, 1800, 0.5, 'sawtooth', 0.08); [0, 3, 6, 9].forEach((d, i) => this.bell(noteFreq(d, 2), 0.2 + i * 0.06, 0.07)); }
+      if (moment === 'warn') this.cackle(0, 1, out);
+      else { this.sweep(200, 1800, 0.5, 'sawtooth', 0.07); [0, 3, 6, 9].forEach((d, i) => this.bell(noteFreq(d, 2), 0.2 + i * 0.06, 0.07)); this.cackle(0.55, 1.1, out); }
     }
+  }
+
+  // Sounds that follow the villain through its visit. Returns a handle whose
+  // stop() fades them out (when the villain is shooed or leaves).
+  villainVisit(kind, ms, clock = 0) {
+    if (!this.ctx) return { stop() {} };
+    const bus = this.ctx.createGain();
+    bus.connect(this.villainBus());
+    const dur = ms / 1000;
+    if (kind === 'broom') {
+      // One swish for each swing of the broom, as it crosses the room left to right.
+      const swing = (2 * Math.PI) / 40 * dur / 2;
+      for (let w = 0.05, i = 0; w < dur - 0.2; w += swing, i++) {
+        const pan = -0.9 + 1.8 * (w / dur);
+        this.swish(w, swing * 0.95, i % 2 ? 2600 : 800, i % 2 ? 800 : 2600, 0.22, pan, bus);
+      }
+    } else if (kind === 'owl') {
+      // A wingbeat on every downstroke (three beats, then a glide), right to left.
+      // `clock` is the game time the visit began: the wings beat on that clock.
+      const T = 0.36, lead = T - (clock % T);
+      for (let w = lead % T; w < dur - 0.1; w += T) {
+        const beat = Math.floor((clock + w + 0.01) / T) % 4;
+        if (beat !== 3) this.wingbeat(w, 0.24, 0.9 - 1.8 * (w / dur), bus);
+      }
+      this.hoot(dur * 0.35, 400, 0.4, 0.22, bus);
+    } else if (kind === 'witch') {
+      // A low, magical hum while she is here, and a quiet laugh.
+      const t = this.ctx.currentTime;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.035, t + 0.6);
+      g.gain.setValueAtTime(0.035, t + dur - 0.6);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      const lp = this.ctx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 420;
+      for (const f of [110, 110 * 1.5, 220.6]) {
+        const o = this.ctx.createOscillator();
+        o.type = 'sawtooth'; o.frequency.value = f;
+        o.connect(lp); o.start(t); o.stop(t + dur + 0.1);
+      }
+      lp.connect(g).connect(bus);
+      this.cackle(dur * 0.22, 0.7, bus);
+    }
+    return {
+      stop: () => {
+        const t = this.ctx.currentTime;
+        bus.gain.cancelScheduledValues(t);
+        bus.gain.setValueAtTime(bus.gain.value, t);
+        bus.gain.linearRampToValueAtTime(0, t + 0.25);
+        setTimeout(() => bus.disconnect(), 400);
+      },
+    };
+  }
+
+  villainBus() {
+    if (!this.vbus) {
+      this.vbus = this.ctx.createGain();
+      this.vbus.gain.value = 1;
+      this.vbus.connect(this.sfx);
+      // A little of the library's echo.
+      const send = this.ctx.createGain();
+      send.gain.value = 0.25;
+      this.vbus.connect(send).connect(this.reverb());
+    }
+    return this.vbus;
+  }
+
+  noise() {
+    if (!this.noiseBuf) {
+      const sr = this.ctx.sampleRate, buf = this.ctx.createBuffer(1, sr * 2, sr);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      this.noiseBuf = buf;
+    }
+    return this.noiseBuf;
+  }
+
+  panned(pan, dest) {
+    if (!this.ctx.createStereoPanner) return dest;
+    const p = this.ctx.createStereoPanner();
+    p.pan.value = Math.max(-1, Math.min(1, pan));
+    p.connect(dest);
+    return p;
+  }
+
+  // Bristles sweeping through the air: noise through a band that slides.
+  swish(when, dur, from, to, gain, pan = 0, dest = this.sfx) {
+    const t = this.ctx.currentTime + when;
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.noise();
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.Q.value = 2.6;
+    bp.frequency.setValueAtTime(from, t);
+    bp.frequency.exponentialRampToValueAtTime(to, t + dur);
+    const hp = this.ctx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 400;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(gain * 3.6, t + dur * 0.55);
+    g.gain.linearRampToValueAtTime(0, t + dur);
+    src.connect(bp).connect(hp).connect(g).connect(this.panned(pan, dest));
+    src.start(t, Math.random()); src.stop(t + dur + 0.05);
+  }
+
+  // Pages and dust scattered by the broom.
+  scatter(when, dest) {
+    for (let i = 0; i < 6; i++) {
+      const t = this.ctx.currentTime + when + i * 0.05 + Math.random() * 0.04;
+      const src = this.ctx.createBufferSource();
+      src.buffer = this.noise();
+      const hp = this.ctx.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 3000 + Math.random() * 2000;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+      src.connect(hp).connect(g).connect(this.panned((Math.random() - 0.5) * 1.2, dest));
+      src.start(t, Math.random()); src.stop(t + 0.08);
+    }
+  }
+
+  // An owl's hoot: a soft, round voice that slides a little down, with breath.
+  hoot(when, f, dur, gain, dest = this.sfx) {
+    const t = this.ctx.currentTime + when;
+    const o = this.ctx.createOscillator();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(f * 1.04, t);
+    o.frequency.exponentialRampToValueAtTime(f, t + 0.06);
+    o.frequency.exponentialRampToValueAtTime(f * 0.9, t + dur);
+    const lfo = this.ctx.createOscillator(), lg = this.ctx.createGain();
+    lfo.frequency.value = 6; lg.gain.value = f * 0.012;
+    lfo.connect(lg).connect(o.frequency);
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = f * 2.2; lp.Q.value = 2;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + Math.min(0.08, dur * 0.3));
+    g.gain.setValueAtTime(gain, t + dur * 0.6);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp).connect(g).connect(dest);
+    // breath
+    const n = this.ctx.createBufferSource();
+    n.buffer = this.noise();
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = f * 2; bp.Q.value = 3;
+    const ng = this.ctx.createGain();
+    ng.gain.setValueAtTime(0.0001, t);
+    ng.gain.exponentialRampToValueAtTime(gain * 0.25, t + 0.05);
+    ng.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    n.connect(bp).connect(ng).connect(dest);
+    o.start(t); lfo.start(t); n.start(t, Math.random());
+    o.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05); n.stop(t + dur + 0.05);
+  }
+
+  // One downstroke of big, soft wings.
+  wingbeat(when, gain, pan = 0, dest = this.sfx) {
+    const t = this.ctx.currentTime + when;
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.noise();
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(350, t);
+    lp.frequency.exponentialRampToValueAtTime(900, t + 0.06);
+    lp.frequency.exponentialRampToValueAtTime(300, t + 0.18);
+    const lp2 = this.ctx.createBiquadFilter();
+    lp2.type = 'lowpass'; lp2.frequency.value = 1100;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+    src.connect(lp).connect(lp2).connect(g).connect(this.panned(pan, dest));
+    src.start(t, Math.random()); src.stop(t + 0.25);
+  }
+
+  // One syllable of a voice: a buzzing source shaped by two vowel formants,
+  // with a breathy "h" at the start.
+  syllable(when, f0, f1, dur, vowel, gain, dest = this.sfx) {
+    const F = { a: [850, 1250], e: [560, 1900], i: [380, 2300], u: [400, 900] }[vowel];
+    const t = this.ctx.currentTime + when;
+    const o = this.ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    const lfo = this.ctx.createOscillator(), lg = this.ctx.createGain();
+    lfo.frequency.value = 7.5; lg.gain.value = f0 * 0.035;
+    lfo.connect(lg).connect(o.frequency);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.025);
+    g.gain.exponentialRampToValueAtTime(gain * 0.6, t + dur * 0.5);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    for (const [fc, q, level] of [[F[0], 6, 1], [F[1], 9, 0.55], [3000, 4, 0.15]]) {
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = fc; bp.Q.value = q;
+      const lv = this.ctx.createGain(); lv.gain.value = level * 2.2;
+      o.connect(bp).connect(lv).connect(g);
+    }
+    g.connect(dest);
+    const n = this.ctx.createBufferSource();
+    n.buffer = this.noise();
+    const hp = this.ctx.createBiquadFilter();
+    hp.type = 'bandpass'; hp.frequency.value = 2200; hp.Q.value = 0.8;
+    const ng = this.ctx.createGain();
+    ng.gain.setValueAtTime(gain * 0.5, t);
+    ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    n.connect(hp).connect(ng).connect(dest);
+    o.start(t); lfo.start(t); n.start(t, Math.random());
+    o.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05); n.stop(t + 0.07);
+  }
+
+  // The witch's cackle: quick "heh-heh-heh" falling in pitch, then a long "haaa".
+  cackle(when = 0, size = 1, dest = this.sfx) {
+    const n = Math.round(4 + 2 * size);
+    let w = when, gap = 0.15;
+    for (let i = 0; i < n; i++) {
+      const f = 640 - i * 22 + Math.random() * 20;
+      this.syllable(w, f, f * 0.86, 0.11, i % 2 ? 'e' : 'a', 0.13, dest);
+      w += gap;
+      gap = Math.max(0.105, gap * 0.94);
+    }
+    this.syllable(w + 0.04, 700, 470, 0.5 + 0.2 * size, 'a', 0.15, dest);
   }
 
   sweep(from, to, dur, type = 'sine', gain = 0.12, vibrato = 0, when = 0) {

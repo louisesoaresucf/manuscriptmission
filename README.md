@@ -22,7 +22,7 @@ The game opens as a leather-bound manuscript. Tap the cover to unclasp it, and t
    - **Wrong book:** the book shakes and you get a gentle hint. There's no penalty.
 3. Pinch or scroll to zoom, drag to look around, and double-tap empty space to zoom in or out.
 4. Stuck? Tap the **quill** for a hint. It recharges after 30 seconds, and each hint adds 10 seconds to your star time.
-5. Every minute the witch sends trouble, after a warning sound and message. In the Scriptorium her enchanted broom sweeps illustrations to new spots, in the Reading Hall her eagle-owl carries them off, and in the Tower Archive the witch herself moves them with her scepter. Only illustrations you haven't found yet are moved. Tap the villain in time to shoo it away and take 10 seconds off your star time.
+5. Every minute the witch sends trouble, after a warning sound and message. In the Scriptorium her enchanted broom sweeps illustrations to new spots, in the Reading Hall her eagle-owl carries them off, and in the Tower Archive the witch herself moves them with her scepter. You hear each one coming: the broom swishes, the owl hoots and beats its wings, and the witch cackles. Only illustrations you haven't found yet are moved. Tap the villain in time to shoo it away and take 10 seconds off your star time.
 6. Finish a room faster to earn more stars (1–3). You can't fail.
 
 There are three rooms, each harder than the last: **The Scriptorium**, **The Reading Hall** and **The Tower Archive**. After the finale you can browse all the lore cards in the collection. Progress lasts only while the page is open.
