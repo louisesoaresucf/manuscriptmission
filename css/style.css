@@ -24,7 +24,7 @@ html, body {
 }
 
 /* Base text size: every rem-based size in the game scales from this. */
-html { font-size: 112.5%; }
+html { font-size: 115%; }
 
 body {
   background-color: var(--parchment);
