@@ -22,7 +22,6 @@ function coverMarkup() {
       </div>
     </div>
     <span class="clasp c1"></span><span class="clasp c2"></span>
-    <p class="cover-hint">Tap to open</p>
   </div>`;
 }
 

@@ -71,20 +71,79 @@ function strap(x, y, dx, dy, fill, w = 3) {
   return `<path d="M${x},${y} Q${mx - w},${my - w} ${x + dx},${y + dy} Q${mx + w},${my + w} ${x},${y} Z" fill="${fill}" ${OUTLINE} stroke-width="1.3"/>`;
 }
 
+// A cupped garden rose seen a little from the side, as in a herbal: dark
+// back petals, an open cup with a spiral heart, and pale rolled petal edges.
+const ROSE = { deep: '#6e1022', dark: '#9c1c33', mid: '#c8364c', light: '#e5697b', pale: '#f6b7bf' };
+function gardenRose(cx, cy, k) {
+  const t = `transform="translate(${cx},${cy}) scale(${k})"`;
+  return `
+  <g ${t}>
+    <g ${OUTLINE} stroke-width="${(1.5 / k).toFixed(2)}">
+      <path d="M-6,-5 C-12,-17 -24,-12 -21,-1 C-19,6 -12,7 -6,3 Z" fill="${ROSE.dark}"/>
+      <path d="M6,-5 C12,-17 24,-12 21,-1 C19,6 12,7 6,3 Z" fill="${ROSE.dark}"/>
+      <path d="M-9,-6 C-8,-18 8,-18 9,-6 C4,-3 -4,-3 -9,-6 Z" fill="${ROSE.mid}"/>
+      <path d="M-19,-1 C-19,11 -9,18 0,18 C9,18 19,11 19,-1 C13,3 6,4 0,4 C-6,4 -13,3 -19,-1 Z" fill="${ROSE.mid}"/>
+      <path d="M-13,-3 C-11,-11 11,-11 13,-3 C8,1 -8,1 -13,-3 Z" fill="${ROSE.deep}"/>
+      <path d="M-7,-4 C-6,-9 6,-9 7,-4 C6,-1 -1,-1 -2,-4 C-1,-6 3,-6 3,-4" fill="${ROSE.dark}"/>
+      <path d="M-19,-1 C-18,9 -10,16 1,17 C-5,11 -7,5 -5,0 C-10,1 -15,1 -19,-1 Z" fill="${ROSE.light}"/>
+      <path d="M19,-2 C18,8 12,14 4,17 C8,10 8,4 6,-1 C11,-1 15,-1 19,-2 Z" fill="${ROSE.light}"/>
+    </g>
+    <path d="M-17,0 C-15,1 -10,1.5 -6,0.5 M17,-1 C14,0 10,0 7,-0.5 M-10,-6.5 C-6,-9 6,-9 10,-6.5" fill="none" stroke="${ROSE.pale}" stroke-width="${(1.3 / k).toFixed(2)}" stroke-linecap="round"/>
+    <path d="M-14,6 C-11,11 -6,14 -1,15 M14,5 C12,10 8,13 5,15" fill="none" stroke="${ROSE.dark}" stroke-width="${(0.7 / k).toFixed(2)}" opacity="0.6"/>
+    <g ${OUTLINE} stroke-width="${(1.2 / k).toFixed(2)}" fill="${P.verdigris}">
+      <path d="M-6,16 C-11,18 -15,22 -17,25 C-11,24 -6,21 -3,18 Z"/>
+      <path d="M6,16 C11,18 15,22 17,25 C11,24 6,21 3,18 Z"/>
+    </g>
+    <circle cx="-9" cy="6" r="${(0.9 / k).toFixed(2)}" fill="${P.goldPale}"/><circle cx="11" cy="3" r="${(0.8 / k).toFixed(2)}" fill="${P.goldPale}"/>
+  </g>`;
+}
+
+// A closed rosebud wrapped in its sepals.
+function roseBud(cx, cy, rot) {
+  return `
+  <g transform="translate(${cx},${cy}) rotate(${rot})" ${OUTLINE} stroke-width="1.3">
+    <path d="M0,-11 C6,-7 7,3 0,6 C-7,3 -6,-7 0,-11 Z" fill="${ROSE.dark}"/>
+    <path d="M0,-11 C3,-6 3,1 0,6" fill="none" stroke="${ROSE.light}" stroke-width="1.2"/>
+    <path d="M-6,0 C-6,6 -3,9 0,10 C3,9 6,6 6,0 C4,3 2,4 0,4 C-2,4 -4,3 -6,0 Z" fill="${P.verdigris}"/>
+    <path d="M-5,1 C-8,-3 -7,-8 -5,-10 M5,1 C8,-3 7,-8 5,-10" fill="none" stroke="${P.verdigrisDark}" stroke-width="1.6" stroke-linecap="round"/>
+  </g>`;
+}
+
+// A rose leaflet with a saw-toothed edge.
+function serrated(len, w, fill, transform) {
+  const n = 7, L = [], R = [];
+  for (let i = 1; i < n; i++) {
+    const y = -len * (i / n), half = w * Math.sin(Math.PI * (i / n) ** 0.85) ** 0.9;
+    const y2 = y - len / n / 2, half2 = half * 1.1 + 0.25;
+    L.push(`L${(-half2).toFixed(1)},${y2.toFixed(1)} L${(-half).toFixed(1)},${(y - len / n).toFixed(1)}`);
+    R.unshift(`L${half.toFixed(1)},${(y - len / n).toFixed(1)} L${half2.toFixed(1)},${y2.toFixed(1)}`);
+  }
+  return `
+  <g transform="${transform}">
+    <path d="M0,0 ${L.join(' ')} L0,${-len} ${R.join(' ')} Z" fill="${fill}" ${OUTLINE} stroke-width="1.3" stroke-linejoin="round"/>
+    <path d="M0,-1 L0,${-len + 3}" ${HILITE} stroke-width="0.8"/>
+  </g>`;
+}
+const leafTrio = (x, y, rot, fill) => `
+  <g transform="translate(${x},${y}) rotate(${rot})">
+    ${serrated(11, 3.6, fill, 'rotate(-48)')}${serrated(11, 3.6, fill, 'rotate(48)')}${serrated(13, 4.2, fill, 'rotate(0)')}
+  </g>`;
+
 export function rose() {
   return `
   ${roots(50, 88)}
-  ${tube('M50,90 C50,70 48,50 50,30 M50,62 C42,56 34,50 30,40 M50,52 C58,46 66,40 70,30', P.verdigrisDark, 2.4)}
-  <!-- thorns -->
-  <path d="M50,76 l-3,-2 M49,66 l3,-2 M40,54 l-1,-3 M60,44 l1,-3" ${FINE} stroke-width="1.4"/>
-  ${leaf(14, 5, P.verdigris, 'translate(50,72) rotate(-60)')}
-  ${leaf(14, 5, P.verdigris, 'translate(50,66) rotate(60)')}
-  ${leaf(12, 4.5, P.verdigrisLight, 'translate(38,52) rotate(-80)')}
-  ${leaf(12, 4.5, P.verdigrisLight, 'translate(62,44) rotate(80)')}
-  ${part('bloom1', 50, 24, rosette(50, 24, 15, P.vermilion) + `<g fill="${P.white}"><circle cx="48" cy="22" r="0.8"/><circle cx="52" cy="22" r="0.8"/><circle cx="50" cy="26" r="0.8"/></g>`)}
-  ${part('bloom2', 29, 36, rosette(29, 36, 10, P.rose))}
-  ${part('bloom3', 71, 26, rosette(71, 26, 10, P.rose))}
-  <path d="M44,18 q3,-3 6,-2" ${HILITE}/>
+  ${tube('M50,90 C51,74 49,58 50,40 M50,66 C44,62 36,58 30,52 M50,56 C57,52 64,48 70,42', P.verdigrisDark, 2.4)}
+  <!-- hooked thorns -->
+  <g fill="${ROSE.deep}" ${OUTLINE} stroke-width="0.8">
+    <path d="M50,80 L45,77 L50,77.5 Z"/><path d="M50,72 L55,69 L50.5,69.5 Z"/>
+    <path d="M42,61 L39,57 L43.5,59 Z"/><path d="M60,51 L62,47 L58.5,50 Z"/><path d="M49.5,48 L45,46 L49.5,45.5 Z"/>
+  </g>
+  ${leafTrio(50, 76, -62, P.verdigris)}
+  ${leafTrio(50, 70, 62, P.verdigrisLight)}
+  ${leafTrio(36, 57, -95, P.verdigrisLight)}
+  ${part('bloom1', 50, 28, gardenRose(50, 28, 1))}
+  ${part('bloom2', 28, 50, gardenRose(28, 46, 0.5))}
+  ${part('bloom3', 71, 38, roseBud(71, 34, 22))}
 `;
 }
 
@@ -141,7 +200,7 @@ export function rosemary() {
 export function sage() {
   const sageLeaf = (t) => `
   <g transform="${t}">
-    <path d="M0,0 C-9,-6 -9,-22 0,-28 C9,-22 9,-6 0,0 Z" fill="${P.sage}" ${OUTLINE} stroke-width="1.5"/>
+    <path d="M0,0 C-9,-6 -9,-22 0,-28 C9,-22 9,-6 0,0 Z" fill="#557f62" ${OUTLINE} stroke-width="1.5"/>
     <path d="M0,-2 L0,-25" ${HILITE} stroke-width="0.9"/>
     <path d="M-5,-8 l2,1 M-6,-14 l2,1 M-5,-20 l2,1 M5,-8 l-2,1 M6,-14 l-2,1 M5,-20 l-2,1" ${FINE} stroke-width="0.6"/>
     <g fill="${P.white}" opacity="0.6"><circle cx="-3" cy="-11" r="0.6"/><circle cx="3" cy="-17" r="0.6"/><circle cx="-2" cy="-21" r="0.6"/><circle cx="3" cy="-8" r="0.6"/></g>
@@ -231,10 +290,10 @@ export function foxglove() {
   ${tube('M50,88 L50,8', P.verdigrisDark, 2)}
   ${leaf(24, 8, P.verdigris, 'translate(50,86) rotate(-70)')}
   ${leaf(24, 8, P.verdigris, 'translate(50,86) rotate(70)')}
-  ${leaf(20, 7, P.verdigrisLight, 'translate(50,82) rotate(-40)')}
-  ${leaf(20, 7, P.verdigrisLight, 'translate(50,82) rotate(40)')}
+  ${leaf(20, 7, P.verdigris, 'translate(50,82) rotate(-40)')}
+  ${leaf(20, 7, P.verdigris, 'translate(50,82) rotate(40)')}
   ${bells}
-  <circle cx="50" cy="8" r="2.4" fill="${P.verdigrisLight}" ${OUTLINE} stroke-width="1"/>`;
+  <circle cx="50" cy="8" r="2.4" fill="${P.verdigris}" ${OUTLINE} stroke-width="1"/>`;
 }
 
 export function hellebore() {
@@ -258,8 +317,8 @@ export function hellebore() {
 export function mistletoe() {
   const pair = (x, y, rot) => `
   <g transform="translate(${x},${y}) rotate(${rot})">
-    <path d="M0,0 C-4,-4 -4,-14 0,-18 C4,-14 4,-4 0,0 Z" transform="rotate(-30)" fill="${P.verdigrisLight}" ${OUTLINE} stroke-width="1.3"/>
-    <path d="M0,0 C-4,-4 -4,-14 0,-18 C4,-14 4,-4 0,0 Z" transform="rotate(30)" fill="${P.verdigrisLight}" ${OUTLINE} stroke-width="1.3"/>
+    <path d="M0,0 C-4,-4 -4,-14 0,-18 C4,-14 4,-4 0,0 Z" transform="rotate(-30)" fill="${P.verdigris}" ${OUTLINE} stroke-width="1.3"/>
+    <path d="M0,0 C-4,-4 -4,-14 0,-18 C4,-14 4,-4 0,0 Z" transform="rotate(30)" fill="${P.verdigris}" ${OUTLINE} stroke-width="1.3"/>
   </g>`;
   const berry = (x, y) => `<circle cx="${x}" cy="${y}" r="3.2" fill="${P.white}" ${OUTLINE} stroke-width="1.1"/><circle cx="${x - 0.9}" cy="${y - 0.9}" r="0.9" fill="${P.white}" stroke="${P.sky}" stroke-width="0.4"/>`;
   return `
@@ -299,11 +358,11 @@ export function peony() {
 
 export function wormwood() {
   const feather = (x0, y0, x1, y1) => {
-    let s = tube(`M${x0},${y0} L${x1},${y1}`, P.stoneLight, 1.2);
+    let s = tube(`M${x0},${y0} L${x1},${y1}`, '#6f8277', 1.2);
     for (let i = 1; i <= 5; i++) {
       const t = i / 6, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t;
       s += `<path d="M${x.toFixed(1)},${y.toFixed(1)} l-6,-3 M${x.toFixed(1)},${y.toFixed(1)} l6,-3 M${(x - 3).toFixed(1)},${(y - 1.5).toFixed(1)} l-1,-3 M${(x + 3).toFixed(1)},${(y - 1.5).toFixed(1)} l1,-3" fill="none" stroke="${P.ink}" stroke-width="3" stroke-linecap="round"/>`;
-      s += `<path d="M${x.toFixed(1)},${y.toFixed(1)} l-6,-3 M${x.toFixed(1)},${y.toFixed(1)} l6,-3 M${(x - 3).toFixed(1)},${(y - 1.5).toFixed(1)} l-1,-3 M${(x + 3).toFixed(1)},${(y - 1.5).toFixed(1)} l1,-3" fill="none" stroke="${P.sage}" stroke-width="1.4" stroke-linecap="round"/>`;
+      s += `<path d="M${x.toFixed(1)},${y.toFixed(1)} l-6,-3 M${x.toFixed(1)},${y.toFixed(1)} l6,-3 M${(x - 3).toFixed(1)},${(y - 1.5).toFixed(1)} l-1,-3 M${(x + 3).toFixed(1)},${(y - 1.5).toFixed(1)} l1,-3" fill="none" stroke="#7fae90" stroke-width="1.6" stroke-linecap="round"/>`;
     }
     return s;
   };
@@ -313,6 +372,6 @@ export function wormwood() {
   ${feather(50, 88, 50, 30)}
   ${feather(50, 80, 26, 40)}
   ${feather(50, 80, 74, 40)}
-  ${tube('M50,30 L50,12 M50,22 L42,14 M50,22 L58,14 M26,40 L20,30 M74,40 L80,30', P.stoneLight, 1.1)}
+  ${tube('M50,30 L50,12 M50,22 L42,14 M50,22 L58,14 M26,40 L20,30 M74,40 L80,30', '#6f8277', 1.1)}
   ${buds([[50, 10], [42, 12], [58, 12], [46, 18], [54, 18], [20, 28], [24, 32], [80, 28], [76, 32]])}`;
 }

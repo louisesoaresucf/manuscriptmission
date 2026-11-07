@@ -4,7 +4,8 @@
 import { defsMarkup } from './defs.js';
 import { sceneDefs } from './scenery.js';
 import { shadingDefs, shade } from './shading.js';
-import { bookCover, BOOKS } from './ornaments.js';
+import { bookCover, BOOKS, witchDefs } from './ornaments.js';
+import { villainDefs } from './villains.js';
 import { ITEMS } from '../data/items.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -37,7 +38,9 @@ export function mountSprite() {
   svg.setAttribute('aria-hidden', 'true');
   // Not display:none, because Chrome drops gradients defined in hidden SVGs.
   svg.setAttribute('style', 'position:absolute;width:0;height:0;overflow:hidden');
-  svg.innerHTML = defsMarkup() + sceneDefs() + shadingDefs() + symbols.join('') + extraSymbols();
+  // The witch, owl and broom gradients live here, once: a second copy inside a
+  // hidden screen would win the id lookup and leave the villains colourless.
+  svg.innerHTML = defsMarkup() + sceneDefs() + shadingDefs() + villainDefs() + witchDefs() + symbols.join('') + extraSymbols();
   document.body.prepend(svg);
 }
 

@@ -45,7 +45,24 @@ const BASE = process.env.BASE_URL || 'http://localhost:8765';
       return g.viewport.toScreen(c.x, c.y);
     });
     if (!hitAt) fail(`room ${room}: villain did not arrive on the minute`);
-    else await page.touchscreen.tap(o.x + hitAt.x, o.y + hitAt.y);
+    // The villain's colours: every gradient it uses must exist exactly once,
+    // in the always-visible sprite (a copy in a hidden screen wins the lookup
+    // and leaves the villain colourless).
+    const colours = await page.evaluate(() => {
+      const refs = new Set();
+      document.querySelectorAll('#screen-game .actors [fill^="url(#"], #screen-game .actors [stroke^="url(#"]').forEach((el) => {
+        for (const a of ['fill', 'stroke']) { const m = /url\(#([^)]+)\)/.exec(el.getAttribute(a) || ''); if (m) refs.add(m[1]); }
+      });
+      const bad = [...refs].filter((id) => {
+        const all = document.querySelectorAll(`[id="${id}"]`);
+        return all.length !== 1 || !all[0].closest('#mm-sprite');
+      });
+      return { n: refs.size, bad };
+    });
+    if (!colours.n) fail(`room ${room}: the villain uses no colour gradients`);
+    if (colours.bad.length) fail(`room ${room}: villain colours missing or duplicated: ${colours.bad.join(', ')}`);
+    console.log(`room ${room} villain colours: ${colours.n} gradients, ${colours.bad.length ? 'FAILED' : 'ok'}`);
+    if (hitAt) await page.touchscreen.tap(o.x + hitAt.x, o.y + hitAt.y);
     await page.waitForTimeout(4500);
     const shoos = await page.evaluate(() => window.__mm.state.game.villain.shoos);
     const afterShoo = await positions();

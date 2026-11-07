@@ -5,7 +5,7 @@
 // A warning comes a few seconds before. Tapping the villain in time shoos it
 // away (a time bonus). Only illustrations still hidden ever move, and never
 // the one the player is holding.
-import { villainDefs, broom, owl, witchFigure } from './art/villains.js';
+import { broom, owl, witchFigure } from './art/villains.js';
 import { itemById } from './data/items.js';
 import { audio } from './audio.js';
 import * as ui from './ui.js';
@@ -49,7 +49,6 @@ export class Interruptions {
     this.shoos = 0;
     this.raf = null;
     this.layer = game.scene.actors;
-    if (this.kind) this.layer.innerHTML = villainDefs();
   }
 
   destroy() {
