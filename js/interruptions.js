@@ -53,6 +53,8 @@ export class Interruptions {
 
   destroy() {
     cancelAnimationFrame(this.raf);
+    this.sound?.stop();
+    this.sound = null;
     this.raf = null;
     this.actor?.remove();
     this.bolts?.remove();
@@ -102,6 +104,7 @@ export class Interruptions {
     this.actor = g;
     this.bolts = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     this.layer.appendChild(this.bolts);
+    this.sound = audio.villainVisit(k, this.kind.ms, now);
     this.loop();
   }
 
@@ -203,6 +206,8 @@ export class Interruptions {
     this.shooed = true;
     this.shooAt = this.game.elapsed();
     this.shoos++;
+    this.sound?.stop();
+    this.sound = null;
     audio.villain(this.kind.name, 'shoo');
     ui.toast(`${this.kind.shoo} −${SHOO_BONUS} seconds on your time.`, 3200);
   }
