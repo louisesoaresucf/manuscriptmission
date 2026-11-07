@@ -9,6 +9,7 @@ import { Game } from './game.js';
 import { Book, storyPage, collectionPage } from './book.js';
 import { audio } from './audio.js';
 import * as ui from './ui.js';
+import { style, setStyle, STYLES } from './style.js';
 
 mountSprite();
 
@@ -142,5 +143,22 @@ $('btn-mute').addEventListener('click', () => {
 
 showIntro();
 
+// Style samples: switch the whole game's art style (rebuilds the drawings and
+// the story pages). The sample build shows a picker on the manuscript screen.
+function switchStyle(s) {
+  setStyle(s);
+  mountSprite({ replace: true });
+  showIntro();
+  document.querySelectorAll('.style-pick button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.style === style())));
+}
+if (window.__mmStylePicker || new URLSearchParams(location.search).has('picker')) {
+  const names = { classic: 'Current', painted: 'Painted', dark: 'Dark fantasy' };
+  const bar = document.createElement('div');
+  bar.className = 'style-pick';
+  bar.innerHTML = `<span>Art style</span>${STYLES.map((k) => `<button type="button" data-style="${k}" aria-pressed="${k === style()}">${names[k]}</button>`).join('')}`;
+  bar.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) switchStyle(b.dataset.style); });
+  $('screen-book').prepend(bar);
+}
+
 // Debug hook used by the automated tests.
-window.__mm = { state, ROOMS, startRoom, finale, openCollection, book, bookFor: (id) => CATEGORY_BOOK[itemById[id].category] };
+window.__mm = { state, ROOMS, startRoom, finale, openCollection, book, setStyle: switchStyle, bookFor: (id) => CATEGORY_BOOK[itemById[id].category] };

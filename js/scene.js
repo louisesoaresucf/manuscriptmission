@@ -7,6 +7,7 @@ import { hasWebGL } from './three/relief.js';
 import { ReliefLayer } from './three/layer.js';
 import { reactionFor } from './three/reactions.js';
 import { bakeRoom } from './realism.js';
+import { style } from './style.js';
 
 const MIN_HIT_PX = 26; // minimum hit radius in screen px (≈52px target)
 
@@ -24,7 +25,7 @@ export class Scene {
     this.canvas = canvas;
     this.room = room;
     this.use3D = hasWebGL() && !window.__mmForce2D;
-    const { back: backArt, front: frontArt } = room.scene();
+    const { back: backArt, front: frontArt } = room.scene(style());
     this.backArt = backArt;
     this.items = new Map(room.items.map((p) => [p.id, { ...p, found: false }]));
     const itemMarkup = this.use3D ? '' : room.items.map((p) => this.svgItem(p)).join('');

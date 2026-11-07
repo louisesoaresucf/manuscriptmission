@@ -8,6 +8,7 @@
 // Panning a single picture is also far lighter work for a phone than
 // redrawing hundreds of vector shapes.
 import { SCENE_W, SCENE_H } from './data/rooms.js';
+import { style } from './style.js';
 
 const K = 1.8; // pixels per scene unit in the baked picture
 
@@ -49,10 +50,16 @@ function noise() {
 }
 
 // Turn our forgiving HTML-style SVG markup into a standalone SVG picture.
-function svgPicture(markup) {
+// The painted style sample loosens every edge a little, like a brush.
+const WOBBLE = `<filter id="pt-wobble" x="-2%" y="-2%" width="104%" height="104%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+</filter>`;
+function svgPicture(markup, look) {
   const defs = [...document.querySelectorAll('#mm-sprite defs')].map((d) => d.outerHTML).join('');
   const holder = document.createElement('div');
-  holder.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${SCENE_W * K}" height="${SCENE_H * K}" viewBox="0 0 ${SCENE_W} ${SCENE_H}">${defs}${markup}</svg>`;
+  const art = look === 'painted' ? `<defs>${WOBBLE}</defs><g filter="url(#pt-wobble)">${markup}</g>` : markup;
+  holder.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${SCENE_W * K}" height="${SCENE_H * K}" viewBox="0 0 ${SCENE_W} ${SCENE_H}">${defs}${art}</svg>`;
   const xml = new XMLSerializer().serializeToString(holder.firstElementChild);
   return URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml' }));
 }
@@ -64,7 +71,8 @@ function poly(ctx, pts) {
 }
 
 export async function bakeRoom(room, markup, canvas) {
-  const url = svgPicture(markup);
+  const look = style();
+  const url = svgPicture(markup, look);
   try {
     const img = new Image();
     img.src = url;
@@ -74,7 +82,9 @@ export async function bakeRoom(room, markup, canvas) {
     canvas.height = H;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0, W, H);
-    paintRealism(ctx, room.realism || {}, W, H);
+    if (look === 'painted') paintedPass(ctx, W, H);
+    else if (look === 'dark') darkPass(ctx, room.darkRealism || { ...room.realism, vignette: 0.9 }, W, H);
+    else paintRealism(ctx, room.realism || {}, W, H);
     return true;
   } finally {
     URL.revokeObjectURL(url);
@@ -162,6 +172,102 @@ function paintRealism(ctx, r, W, H) {
   g.addColorStop(1, `rgba(40,24,12,${r.vignette ?? 0.5})`);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+// ---------- style samples ----------
+
+// Painted: tempera on vellum. Pigment pools darker at the edges of each
+// shape, long brush marks run through the colour, and the vellum's grain
+// and warmth show through. Flat, with no cast light or shadow.
+function paintedPass(ctx, W, H) {
+  // A blurred copy to find the edges of each wash of colour.
+  const sw = Math.round(W / 6), sh = Math.round(H / 6);
+  const small = document.createElement('canvas');
+  small.width = sw; small.height = sh;
+  const sg = small.getContext('2d');
+  sg.imageSmoothingQuality = 'high';
+  sg.drawImage(ctx.canvas, 0, 0, sw, sh);
+  const blur = document.createElement('canvas');
+  blur.width = W; blur.height = H;
+  const bg = blur.getContext('2d');
+  bg.imageSmoothingQuality = 'high';
+  bg.drawImage(small, 0, 0, W, H);
+  const a = ctx.getImageData(0, 0, W, H), b = bg.getImageData(0, 0, W, H).data, d = a.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const l = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
+    const lb = b[i] * 0.3 + b[i + 1] * 0.59 + b[i + 2] * 0.11;
+    const k = 1 - Math.min(0.32, Math.abs(l - lb) / 255 * 0.9);
+    // edge pooling, a touch more saturation, warmed toward the vellum
+    const m = (d[i] + d[i + 1] + d[i + 2]) / 3;
+    d[i] = Math.min(255, (m + (d[i] - m) * 1.12) * k + 6);
+    d[i + 1] = Math.min(255, (m + (d[i + 1] - m) * 1.12) * k + 3);
+    d[i + 2] = Math.min(255, (m + (d[i + 2] - m) * 1.12) * k - 4);
+  }
+  ctx.putImageData(a, 0, 0);
+  blur.width = blur.height = small.width = small.height = 1;
+
+  ctx.save();
+  // Brush marks.
+  ctx.globalCompositeOperation = 'soft-light';
+  ctx.globalAlpha = 0.5;
+  for (let i = 0; i < 2600; i++) {
+    const x = Math.random() * W, y = Math.random() * H, len = (30 + Math.random() * 90) * K, v = Math.random() < 0.5 ? 0 : 255;
+    ctx.strokeStyle = `rgba(${v},${v},${v},0.25)`;
+    ctx.lineWidth = (2 + Math.random() * 5) * K;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + len / 2, y + (Math.random() - 0.5) * 10 * K, x + len, y + (Math.random() - 0.5) * 8 * K); ctx.stroke();
+  }
+  // Vellum grain and warmth.
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.globalAlpha = 0.28;
+  ctx.fillStyle = ctx.createPattern(noise(), 'repeat');
+  ctx.setTransform(1.2, 0, 0, 1.2, 0, 0);
+  ctx.fillRect(0, 0, W / 1.2, H / 1.2);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = '#e8c88a';
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+// Dark: night and torchlight. The room is pushed into shadow and cool
+// colour, rough stone and grime are deepened, and warm pools of light are
+// added back around the torches, with a low haze over the floor.
+function darkPass(ctx, r, W, H) {
+  ctx.save();
+  // Stone texture and grime at two scales.
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = ctx.createPattern(noise(), 'repeat');
+  ctx.globalAlpha = 0.5;
+  ctx.setTransform(2.4, 0, 0, 2.4, 0, 0);
+  ctx.fillRect(0, 0, W / 2.4, H / 2.4);
+  ctx.globalAlpha = 0.35;
+  ctx.setTransform(0.6, 0, 0, 0.6, 0, 0);
+  ctx.fillRect(0, 0, W / 0.6, H / 0.6);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // Damp streaks running down the walls.
+  const floorY = (r.floorY || 760) * K;
+  for (let i = 0; i < 70; i++) {
+    const x = Math.random() * W, y = Math.random() * floorY * 0.6, len = (80 + Math.random() * 260) * K;
+    const g = ctx.createLinearGradient(0, y, 0, y + len);
+    g.addColorStop(0, 'rgba(30,24,18,0.35)'); g.addColorStop(1, 'rgba(30,24,18,0)');
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y, (3 + Math.random() * 10) * K, len);
+  }
+  // Night: everything sinks into a cold, deep shadow.
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#6e606c';
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+  // Then the warm light comes back around the flames, the vignette closes in.
+  paintRealism(ctx, { ...r, shafts: r.shafts || [] }, W, H);
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  const g = ctx.createLinearGradient(0, floorY, 0, H);
+  g.addColorStop(0, 'rgba(120,130,150,0)'); g.addColorStop(1, 'rgba(120,130,150,0.18)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, floorY, W, H - floorY);
   ctx.restore();
 }
 

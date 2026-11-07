@@ -6,6 +6,8 @@
 // Parts of a drawing wrapped in <g data-part="name" data-pivot="x,y"> become
 // separate pieces that can be animated (wings, heads, tails, flames…).
 
+import { style } from '../style.js';
+
 const T = () => window.THREE;
 
 const GOLD = '#c9a228'; // stand-in colour for gold-leaf gradients
@@ -51,25 +53,91 @@ function paintTexture() {
   return paintBump;
 }
 
+// Textures for the two style samples, made once.
+const extraTex = new Map();
+function canvasTexture(key, draw, repeat) {
+  if (extraTex.has(key)) return extraTex.get(key);
+  const THREE = T();
+  const n = 128, c = document.createElement('canvas');
+  c.width = c.height = n;
+  draw(c.getContext('2d'), n);
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(repeat, repeat);
+  extraTex.set(key, tex);
+  return tex;
+}
+// Painted: long brush strokes in the pigment, and gold leaf punched with dots.
+const brushTexture = () => canvasTexture('brush', (g, n) => {
+  g.fillStyle = '#9a9a9a';
+  g.fillRect(0, 0, n, n);
+  for (let i = 0; i < 260; i++) {
+    const y = Math.random() * n, x = Math.random() * n, len = 20 + Math.random() * 50, v = 110 + Math.random() * 110;
+    g.strokeStyle = `rgb(${v},${v},${v})`;
+    g.lineWidth = 1.5 + Math.random() * 3;
+    g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + len / 2, y + (Math.random() - 0.5) * 8, x + len, y + (Math.random() - 0.5) * 6); g.stroke();
+  }
+}, 0.05);
+const punchTexture = () => canvasTexture('punch', (g, n) => {
+  g.fillStyle = '#c8c8c8';
+  g.fillRect(0, 0, n, n);
+  g.fillStyle = '#404040';
+  for (let y = 8; y < n; y += 16) for (let x = (y / 16) % 2 ? 16 : 8; x < n; x += 16) { g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill(); }
+}, 0.08);
+// Dark: grime and wear, blotchy and darker in patches.
+const grimeTexture = () => canvasTexture('grime', (g, n) => {
+  const img = g.createImageData(n, n);
+  const blobs = Array.from({ length: 14 }, () => [Math.random() * n, Math.random() * n, 10 + Math.random() * 30, 0.25 + Math.random() * 0.35]);
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      let v = 1;
+      for (const [bx, by, br, a] of blobs) {
+        const dx = Math.min(Math.abs(x - bx), n - Math.abs(x - bx)), dy = Math.min(Math.abs(y - by), n - Math.abs(y - by));
+        v -= a * Math.max(0, 1 - Math.hypot(dx, dy) / br);
+      }
+      v = Math.max(0.45, v) * (0.9 + Math.random() * 0.1);
+      const i = (y * n + x) * 4;
+      img.data[i] = v * 255; img.data[i + 1] = v * 245; img.data[i + 2] = v * 228; img.data[i + 3] = 255;
+    }
+  }
+  g.putImageData(img, 0, 0);
+}, 0.025);
+
 // Physically based materials: gold leaf is real metal that reflects the
-// room's light; pigments are matte paint; ink is a satin line.
+// room's light; pigments are matte paint; ink is a satin line. The painted
+// and dark style samples change the finish: tempera and tooled gold, or
+// grimy, worn paint and aged gold.
 function material(hex, opacity, kind) {
-  const key = `${hex}|${opacity}|${kind}`;
+  const look = style();
+  const key = `${hex}|${opacity}|${kind}|${look}`;
   if (materials.has(key)) return materials.get(key);
   const THREE = T();
   const transparent = opacity < 0.999;
   const lin = (h) => new THREE.Color(h).convertSRGBToLinear();
+  const side = THREE.DoubleSide;
   let m;
   if (kind === 'halo') {
-    m = new THREE.MeshBasicMaterial({ color: lin('#ffe8a0'), transparent: true, opacity: 0.35 * opacity, depthWrite: false, side: THREE.DoubleSide });
+    m = new THREE.MeshBasicMaterial({ color: lin('#ffe8a0'), transparent: true, opacity: 0.35 * opacity, depthWrite: false, side });
   } else if (GOLDS.has(hex)) {
     const base = { [GOLD]: '#e6c35e', '#c9a227': '#e0bb52', '#e6c65a': '#ecd070', '#f7e08a': '#f5e2a0', '#8a6a12': '#a8822a' }[hex] || hex;
-    m = new THREE.MeshStandardMaterial({ color: lin(base), metalness: 0.9, roughness: 0.34, side: THREE.DoubleSide, transparent, opacity });
+    if (look === 'painted') {
+      m = new THREE.MeshStandardMaterial({ color: lin(base), metalness: 0.75, roughness: 0.4, bumpMap: punchTexture(), bumpScale: 0.5, side, transparent, opacity });
+    } else if (look === 'dark') {
+      m = new THREE.MeshStandardMaterial({ color: lin(base).multiplyScalar(0.62), metalness: 0.85, roughness: 0.55, map: grimeTexture(), side, transparent, opacity });
+    } else {
+      m = new THREE.MeshStandardMaterial({ color: lin(base), metalness: 0.9, roughness: 0.34, side, transparent, opacity });
+    }
   } else if (hex === INK) {
-    // Ink stays crisp and dark whatever the lighting.
-    m = new THREE.MeshBasicMaterial({ color: lin('#1e140b'), side: THREE.DoubleSide, transparent, opacity });
+    // Ink stays crisp and dark whatever the lighting (sepia in the painted style).
+    m = new THREE.MeshBasicMaterial({ color: lin(look === 'painted' ? '#3e2614' : '#1e140b'), side, transparent, opacity });
+  } else if (look === 'painted') {
+    m = new THREE.MeshStandardMaterial({ color: lin(hex), metalness: 0, roughness: 0.95, bumpMap: kind === 'fill' ? brushTexture() : null, bumpScale: 0.6, side, transparent, opacity });
+  } else if (look === 'dark') {
+    const c = lin(hex);
+    const hsl = {}; c.getHSL(hsl); c.setHSL(hsl.h, hsl.s * 0.8, hsl.l * 0.9);
+    m = new THREE.MeshStandardMaterial({ color: c, metalness: 0, roughness: 0.82, map: kind === 'fill' ? grimeTexture() : null, bumpMap: kind === 'fill' ? paintTexture() : null, bumpScale: 0.5, side, transparent, opacity });
   } else {
-    m = new THREE.MeshStandardMaterial({ color: lin(hex), metalness: 0, roughness: 0.72, bumpMap: kind === 'fill' ? paintTexture() : null, bumpScale: 0.35, side: THREE.DoubleSide, transparent, opacity });
+    m = new THREE.MeshStandardMaterial({ color: lin(hex), metalness: 0, roughness: 0.72, bumpMap: kind === 'fill' ? paintTexture() : null, bumpScale: 0.35, side, transparent, opacity });
   }
   materials.set(key, m);
   return m;
