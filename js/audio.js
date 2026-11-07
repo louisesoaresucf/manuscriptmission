@@ -199,7 +199,7 @@ class Audio {
       [7, 4, 2, 0].forEach((d, i) => this.pluck(noteFreq(d, 1), i * 0.07, 0.3));
       if (kind === 'broom') { this.swish(0, 0.35, 1200, 4200, 0.3, 0, out); this.swish(0.3, 0.3, 3000, 5000, 0.15, 0.8, out); }
       if (kind === 'owl') { this.hoot(0, 520, 0.12, 0.2, out); this.hoot(0.14, 540, 0.12, 0.2, out); this.hoot(0.28, 500, 0.16, 0.18, out); this.wingbeat(0.1, 0.25, -0.6, out); this.wingbeat(0.4, 0.18, -0.9, out); }
-      if (kind === 'witch') { this.syllable(0, 300, 210, 0.32, 'u', 0.22, out); this.cackle(0.45, 0.6, out); }
+      if (kind === 'witch') { this.poof(0.05, 0.22, out); this.darkSparkles(0.12, 7, 0.6, 0.09, out); }
       return;
     }
     if (kind === 'broom') {
@@ -209,8 +209,7 @@ class Audio {
       if (moment === 'warn') { this.hoot(0, 410, 0.42, 0.26, out); this.hoot(0.75, 380, 0.16, 0.22, out); this.hoot(0.95, 360, 0.7, 0.28, out); }
       else { this.hoot(0, 390, 0.5, 0.24, out); [0.2, 0.55, 0.9].forEach((w) => this.wingbeat(w, 0.3, 0, out)); }
     } else if (kind === 'witch') {
-      if (moment === 'warn') this.cackle(0, 1, out);
-      else { this.sweep(200, 1800, 0.5, 'sawtooth', 0.07); [0, 3, 6, 9].forEach((d, i) => this.bell(noteFreq(d, 2), 0.2 + i * 0.06, 0.07)); this.cackle(0.55, 1.1, out); }
+      this.witchMagic(0, out);
     }
   }
 
@@ -238,22 +237,11 @@ class Audio {
       }
       this.hoot(dur * 0.35, 400, 0.4, 0.22, bus);
     } else if (kind === 'witch') {
-      // A low, magical hum while she is here, and a quiet laugh.
-      const t = this.ctx.currentTime;
-      const g = this.ctx.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.035, t + 0.6);
-      g.gain.setValueAtTime(0.035, t + dur - 0.6);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      const lp = this.ctx.createBiquadFilter();
-      lp.type = 'lowpass'; lp.frequency.value = 420;
-      for (const f of [110, 110 * 1.5, 220.6]) {
-        const o = this.ctx.createOscillator();
-        o.type = 'sawtooth'; o.frequency.value = f;
-        o.connect(lp); o.start(t); o.stop(t + dur + 0.1);
+      // A low, uneasy chord while she is here, and stray sparks of her magic.
+      this.ominous(0, dur, 0.03, bus);
+      for (let w = 0.5; w < dur - 0.4; w += 0.7 + Math.random() * 0.5) {
+        this.twinkle(w, 1046.5 * Math.pow(2, [0, 3, 6, 9, 12][Math.floor(Math.random() * 5)] / 12), 0.04, (Math.random() - 0.5) * 1.4, bus);
       }
-      lp.connect(g).connect(bus);
-      this.cackle(dur * 0.22, 0.7, bus);
     }
     return {
       stop: () => {
@@ -385,55 +373,6 @@ class Audio {
     src.start(t, Math.random()); src.stop(t + 0.25);
   }
 
-  // One syllable of a voice: a buzzing source shaped by two vowel formants,
-  // with a breathy "h" at the start.
-  syllable(when, f0, f1, dur, vowel, gain, dest = this.sfx) {
-    const F = { a: [850, 1250], e: [560, 1900], i: [380, 2300], u: [400, 900] }[vowel];
-    const t = this.ctx.currentTime + when;
-    const o = this.ctx.createOscillator();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(f0, t);
-    o.frequency.exponentialRampToValueAtTime(f1, t + dur);
-    const lfo = this.ctx.createOscillator(), lg = this.ctx.createGain();
-    lfo.frequency.value = 7.5; lg.gain.value = f0 * 0.035;
-    lfo.connect(lg).connect(o.frequency);
-    const g = this.ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(gain, t + 0.025);
-    g.gain.exponentialRampToValueAtTime(gain * 0.6, t + dur * 0.5);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    for (const [fc, q, level] of [[F[0], 6, 1], [F[1], 9, 0.55], [3000, 4, 0.15]]) {
-      const bp = this.ctx.createBiquadFilter();
-      bp.type = 'bandpass'; bp.frequency.value = fc; bp.Q.value = q;
-      const lv = this.ctx.createGain(); lv.gain.value = level * 2.2;
-      o.connect(bp).connect(lv).connect(g);
-    }
-    g.connect(dest);
-    const n = this.ctx.createBufferSource();
-    n.buffer = this.noise();
-    const hp = this.ctx.createBiquadFilter();
-    hp.type = 'bandpass'; hp.frequency.value = 2200; hp.Q.value = 0.8;
-    const ng = this.ctx.createGain();
-    ng.gain.setValueAtTime(gain * 0.5, t);
-    ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-    n.connect(hp).connect(ng).connect(dest);
-    o.start(t); lfo.start(t); n.start(t, Math.random());
-    o.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05); n.stop(t + 0.07);
-  }
-
-  // The witch's cackle: quick "heh-heh-heh" falling in pitch, then a long "haaa".
-  cackle(when = 0, size = 1, dest = this.sfx) {
-    const n = Math.round(4 + 2 * size);
-    let w = when, gap = 0.15;
-    for (let i = 0; i < n; i++) {
-      const f = 640 - i * 22 + Math.random() * 20;
-      this.syllable(w, f, f * 0.86, 0.11, i % 2 ? 'e' : 'a', 0.13, dest);
-      w += gap;
-      gap = Math.max(0.105, gap * 0.94);
-    }
-    this.syllable(w + 0.04, 700, 470, 0.5 + 0.2 * size, 'a', 0.15, dest);
-  }
-
   // ---- the witch's dark magic ----
   // Noise drawn in, faster and brighter, as a spell gathers.
   gather(when, dur, gain, dest = this.sfx) {
@@ -524,25 +463,13 @@ class Audio {
     lp.connect(g).connect(dest);
   }
 
-  // Three samples of the witch's magic, for choosing one.
-  //   A: dark poof — the spell is drawn in, then bursts in a puff of smoke.
-  //   B: twinkling curse — a low, uneasy chord under a cascade of eerie sparkles.
-  //   C: poof and sparkles — a puff of smoke that scatters into twinkling sparks.
-  witchMagic(variant = 'A', when = 0, dest = this.sfx) {
-    if (variant === 'A') {
-      this.gather(when, 0.55, 0.2, dest);
-      this.poof(when + 0.55, 0.3, dest);
-      this.twinkle(when + 0.6, 2349, 0.07, 0.5, dest);
-      this.twinkle(when + 0.75, 1661, 0.06, -0.5, dest);
-    } else if (variant === 'B') {
-      this.ominous(when, 2.2, 0.09, dest);
-      this.darkSparkles(when + 0.15, 14, 1.6, 0.17, dest);
-    } else {
-      this.gather(when, 0.4, 0.18, dest);
-      this.poof(when + 0.4, 0.26, dest);
-      this.ominous(when + 0.35, 1.6, 0.04, dest);
-      this.darkSparkles(when + 0.48, 12, 1.3, 0.12, dest, { rise: true, base: 1046.5 });
-    }
+  // The witch's magic: the spell is drawn in, bursts in a puff of dark smoke,
+  // and scatters into sparks rising through an eerie scale over a low chord.
+  witchMagic(when = 0, dest = this.sfx) {
+    this.gather(when, 0.4, 0.18, dest);
+    this.poof(when + 0.4, 0.26, dest);
+    this.ominous(when + 0.35, 1.6, 0.04, dest);
+    this.darkSparkles(when + 0.48, 12, 1.3, 0.12, dest, { rise: true, base: 1046.5 });
   }
 
   sweep(from, to, dur, type = 'sine', gain = 0.12, vibrato = 0, when = 0) {
