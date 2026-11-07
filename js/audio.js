@@ -434,140 +434,114 @@ class Audio {
     this.syllable(w + 0.04, 700, 470, 0.5 + 0.2 * size, 'a', 0.15, dest);
   }
 
-  // ---- the witch's voice ----
-  // A glottal source (a buzz whose harmonics fall away like a real voice),
-  // with unsteady pitch, a raspy crackle and breath, shaped by the vowel's
-  // formants. Each syllable starts with an aspirated "h".
-  glottal() {
-    if (!this.glottalWave) {
-      const n = 40, re = new Float32Array(n), im = new Float32Array(n);
-      for (let k = 1; k < n; k++) im[k] = 1 / Math.pow(k, 1.15);
-      this.glottalWave = this.ctx.createPeriodicWave(re, im);
-    }
-    return this.glottalWave;
-  }
-
-  // f: [start, peak, end] pitch in Hz; the peak comes at `peakAt` (0–1).
-  voice(when, dur, f, vowel, { gain = 0.2, rasp = 0.3, breath = 0.15, jitter = 0.03, vibrato = 0, peakAt = 0.25, h = 0.05 } = {}, dest = this.sfx) {
-    const FORMANTS = {
-      ee: [[300, 60, 1], [2300, 120, 0.5], [3000, 180, 0.35], [3600, 250, 0.2]],
-      ih: [[400, 70, 1], [2000, 110, 0.5], [2600, 160, 0.3], [3500, 250, 0.15]],
-      eh: [[560, 80, 1], [1850, 110, 0.5], [2500, 160, 0.3], [3500, 250, 0.15]],
-      ae: [[720, 90, 1], [1700, 120, 0.55], [2450, 160, 0.3], [3500, 250, 0.15]],
-      ah: [[800, 90, 1], [1200, 110, 0.6], [2550, 160, 0.3], [3500, 250, 0.15]],
-      uh: [[600, 80, 1], [1100, 100, 0.45], [2400, 160, 0.2], [3400, 250, 0.1]],
-    }[vowel];
-    const ctx = this.ctx, t = ctx.currentTime + when;
-    // Pitch contour with jitter, as a curve.
-    const N = 48, curve = new Float32Array(N), half = new Float32Array(N);
-    for (let i = 0; i < N; i++) {
-      const x = i / (N - 1);
-      const base = x < peakAt ? f[0] + (f[1] - f[0]) * Math.sin((x / peakAt) * Math.PI / 2) : f[1] + (f[2] - f[1]) * Math.pow((x - peakAt) / (1 - peakAt), 0.8);
-      const vib = vibrato ? 1 + vibrato * Math.sin(x * dur * 2 * Math.PI * 6.5) : 1;
-      curve[i] = base * vib * (1 + (Math.random() - 0.5) * jitter);
-      half[i] = curve[i] / 2;
-    }
-    const src = ctx.createOscillator();
-    src.setPeriodicWave(this.glottal());
-    src.frequency.setValueCurveAtTime(curve, t, dur);
-    // Rasp: the voice's level wobbles at half the pitch (a cracked, fried edge).
-    const raspGain = ctx.createGain();
-    raspGain.gain.value = 1 - rasp / 2;
-    const sub = ctx.createOscillator();
-    sub.type = 'square';
-    sub.frequency.setValueCurveAtTime(half, t, dur);
-    const subDepth = ctx.createGain();
-    subDepth.gain.value = rasp / 2;
-    sub.connect(subDepth).connect(raspGain.gain);
-    src.connect(raspGain);
-    // Breath and the "h": noise through the same mouth shape.
-    const noise = ctx.createBufferSource();
-    noise.buffer = this.noise();
-    const ng = ctx.createGain();
-    ng.gain.setValueAtTime(0, t);
-    ng.gain.linearRampToValueAtTime(1.4, t + 0.008);
-    ng.gain.linearRampToValueAtTime(breath, t + h);
-    ng.gain.setValueAtTime(breath, t + dur * 0.8);
-    ng.gain.linearRampToValueAtTime(0, t + dur);
-    noise.connect(ng);
-    // Voicing starts after the "h".
-    const vg = ctx.createGain();
-    vg.gain.setValueAtTime(0, t);
-    vg.gain.setValueAtTime(0, t + h * 0.6);
-    vg.gain.linearRampToValueAtTime(1, t + h + 0.02);
-    vg.gain.setValueAtTime(1, t + dur * 0.7);
-    vg.gain.linearRampToValueAtTime(0, t + dur);
-    raspGain.connect(vg);
-    // The mouth: formant filters in parallel.
-    const mouth = ctx.createGain();
-    mouth.gain.value = gain;
-    for (const [fc, bw, level] of FORMANTS) {
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass'; bp.frequency.value = fc; bp.Q.value = fc / bw;
-      const lv = ctx.createGain(); lv.gain.value = level * 4;
-      vg.connect(bp); ng.connect(bp);
-      bp.connect(lv).connect(mouth);
-    }
-    mouth.connect(dest);
-    src.start(t); sub.start(t); noise.start(t, Math.random());
-    src.stop(t + dur + 0.02); sub.stop(t + dur + 0.02); noise.stop(t + dur + 0.02);
-  }
-
-  // A sharp breath in through the teeth, at the end of a laugh.
-  inhale(when, dur, gain, dest = this.sfx) {
+  // ---- the witch's dark magic ----
+  // Noise drawn in, faster and brighter, as a spell gathers.
+  gather(when, dur, gain, dest = this.sfx) {
     const t = this.ctx.currentTime + when;
     const n = this.ctx.createBufferSource();
     n.buffer = this.noise();
     const bp = this.ctx.createBiquadFilter();
-    bp.type = 'bandpass'; bp.Q.value = 2.5;
-    bp.frequency.setValueAtTime(1800, t);
-    bp.frequency.linearRampToValueAtTime(3200, t + dur);
+    bp.type = 'bandpass'; bp.Q.value = 3;
+    bp.frequency.setValueAtTime(300, t);
+    bp.frequency.exponentialRampToValueAtTime(5000, t + dur);
     const g = this.ctx.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(gain, t + dur * 0.7);
-    g.gain.linearRampToValueAtTime(0, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + dur);
+    g.gain.linearRampToValueAtTime(0, t + dur + 0.02);
     n.connect(bp).connect(g).connect(dest);
-    n.start(t, Math.random()); n.stop(t + dur + 0.02);
+    n.start(t, Math.random()); n.stop(t + dur + 0.05);
   }
 
-  // Three versions of the witch's evil laugh, for choosing one.
-  //   A: the classic hag: a high, nasal "hee-hee-hee-hee… heeeeee!" with a trembling end.
-  //   B: the slow build: low, menacing "heh… heh… heh…" that rises into "HA-HA-HA-HAAA!".
-  //   C: the shriek: a fast, crackling "ah-ha-ha-ha-ha" that breaks into a scream.
-  witchLaugh(variant = 'A', when = 0, size = 1, dest = this.sfx) {
-    const syl = (w, d, f, v, o) => this.voice(when + w, d, f, v, o, dest);
-    let w = 0;
+  // A puff of dark smoke: a soft thump and a burst of air that darkens as it fades.
+  poof(when, gain, dest = this.sfx) {
+    const t = this.ctx.currentTime + when;
+    const n = this.ctx.createBufferSource();
+    n.buffer = this.noise();
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.Q.value = 0.8;
+    lp.frequency.setValueAtTime(4000, t);
+    lp.frequency.exponentialRampToValueAtTime(180, t + 0.7);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(gain, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+    n.connect(lp).connect(g).connect(dest);
+    n.start(t, Math.random()); n.stop(t + 1);
+    const o = this.ctx.createOscillator();
+    o.frequency.setValueAtTime(110, t);
+    o.frequency.exponentialRampToValueAtTime(38, t + 0.35);
+    const og = this.ctx.createGain();
+    og.gain.setValueAtTime(gain * 1.4, t);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+    o.connect(og).connect(dest);
+    o.start(t); o.stop(t + 0.5);
+  }
+
+  // One glassy twinkle: a bell-like tone with clangy, inharmonic overtones.
+  twinkle(when, freq, gain, pan = 0, dest = this.sfx) {
+    const t = this.ctx.currentTime + when;
+    const out = this.panned(pan, dest);
+    for (const [ratio, level, decay] of [[1, 1, 0.9], [2.76, 0.45, 0.45], [5.4, 0.22, 0.25], [8.93, 0.1, 0.15]]) {
+      const o = this.ctx.createOscillator();
+      o.frequency.value = freq * ratio;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain * level, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+      o.connect(g).connect(out);
+      o.start(t); o.stop(t + decay + 0.02);
+    }
+  }
+
+  // Sparkles in a dark, diminished scale, falling (or rising) as they twinkle.
+  darkSparkles(when, n, dur, gain, dest = this.sfx, { rise = false, base = 1175 } = {}) {
+    const steps = [0, 1, 3, 4, 6, 7, 9, 10]; // half-whole diminished: eerie and unresolved
+    for (let i = 0; i < n; i++) {
+      const k = rise ? i : n - 1 - i;
+      const semis = steps[k % steps.length] + 12 * Math.floor(k / steps.length);
+      const f = base * Math.pow(2, semis / 12);
+      const w = when + (i / n) * dur + Math.random() * 0.04;
+      this.twinkle(w, f, gain * (0.6 + Math.random() * 0.4), (Math.random() - 0.5) * 1.6, dest);
+    }
+  }
+
+  // A low, uneasy chord (D, E-flat and A-flat) that swells and fades.
+  ominous(when, dur, gain, dest = this.sfx) {
+    const t = this.ctx.currentTime + when;
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 600;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + dur * 0.4);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    for (const f of [73.4, 77.8, 103.8, 146.8]) {
+      for (const detune of [-6, 6]) {
+        const o = this.ctx.createOscillator();
+        o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = detune;
+        o.connect(lp); o.start(t); o.stop(t + dur + 0.05);
+      }
+    }
+    lp.connect(g).connect(dest);
+  }
+
+  // Three samples of the witch's magic, for choosing one.
+  //   A: dark poof — the spell is drawn in, then bursts in a puff of smoke.
+  //   B: twinkling curse — a low, uneasy chord under a cascade of eerie sparkles.
+  //   C: poof and sparkles — a puff of smoke that scatters into twinkling sparks.
+  witchMagic(variant = 'A', when = 0, dest = this.sfx) {
     if (variant === 'A') {
-      const n = Math.round(5 + 3 * size);
-      let gap = 0.16;
-      for (let i = 0; i < n; i++) {
-        const p = 880 - i * 18;
-        syl(w, 0.12, [p * 0.92, p * 1.06, p * 0.8], i % 3 === 2 ? 'ih' : 'ee', { gain: 0.42, rasp: 0.35, breath: 0.2, jitter: 0.05, h: 0.035 });
-        w += gap; gap = Math.max(0.112, gap * 0.95);
-      }
-      syl(w + 0.03, 0.75 + 0.3 * size, [900, 1080, 620], 'ee', { gain: 0.46, rasp: 0.45, breath: 0.2, jitter: 0.06, vibrato: 0.05, peakAt: 0.15, h: 0.04 });
-      this.inhale(when + w + 0.95 + 0.3 * size, 0.32, 0.2, dest);
+      this.gather(when, 0.55, 0.2, dest);
+      this.poof(when + 0.55, 0.3, dest);
+      this.twinkle(when + 0.6, 2349, 0.07, 0.5, dest);
+      this.twinkle(when + 0.75, 1661, 0.06, -0.5, dest);
     } else if (variant === 'B') {
-      for (let i = 0; i < 3; i++) {
-        syl(w, 0.2, [230, 245, 200], 'eh', { gain: 0.22, rasp: 0.7, breath: 0.25, jitter: 0.06, h: 0.06 });
-        w += 0.42 - i * 0.06;
-      }
-      const n = Math.round(4 + 2 * size);
-      for (let i = 0; i < n; i++) {
-        const p = 300 + i * 55;
-        syl(w, 0.13, [p * 0.95, p * 1.08, p * 0.82], 'ah', { gain: 0.2, rasp: 0.45, breath: 0.15, jitter: 0.05, h: 0.03 });
-        w += 0.15;
-      }
-      syl(w + 0.02, 0.85 + 0.3 * size, [620, 720, 360], 'ah', { gain: 0.22, rasp: 0.5, breath: 0.15, jitter: 0.05, vibrato: 0.04, peakAt: 0.2, h: 0.035 });
+      this.ominous(when, 2.2, 0.09, dest);
+      this.darkSparkles(when + 0.15, 14, 1.6, 0.17, dest);
     } else {
-      const n = Math.round(7 + 3 * size);
-      for (let i = 0; i < n; i++) {
-        const p = 620 + Math.sin(i * 1.7) * 60 + i * 12;
-        syl(w, 0.085, [p * 0.9, p * 1.12, p * 0.75], i % 2 ? 'ah' : 'ae', { gain: 0.17, rasp: 0.6, breath: 0.22, jitter: 0.08, h: 0.022 });
-        w += 0.095;
-      }
-      syl(w + 0.02, 0.55 + 0.2 * size, [900, 1400, 1100], 'ae', { gain: 0.16, rasp: 0.55, breath: 0.3, jitter: 0.09, vibrato: 0.06, peakAt: 0.3, h: 0.02 });
-      syl(w + 0.6 + 0.2 * size, 0.35, [1050, 1100, 520], 'ah', { gain: 0.13, rasp: 0.6, breath: 0.3, jitter: 0.08, peakAt: 0.1, h: 0.02 });
+      this.gather(when, 0.4, 0.18, dest);
+      this.poof(when + 0.4, 0.26, dest);
+      this.ominous(when + 0.35, 1.6, 0.04, dest);
+      this.darkSparkles(when + 0.48, 12, 1.3, 0.12, dest, { rise: true, base: 1046.5 });
     }
   }
 
