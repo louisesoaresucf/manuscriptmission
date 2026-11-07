@@ -3,7 +3,6 @@
 import { buildRelief, resetModels } from './relief.js';
 import { REACTIONS, reactionFor } from './reactions.js';
 import { restingArt } from '../art/sprite.js';
-import { style } from '../style.js';
 
 const THREE = () => window.THREE;
 
@@ -89,7 +88,7 @@ function particleTexture(type, colour) {
 // the scenery, on a dark window as well as a pale wall. The plane covers
 // 140 scene units round the 100-unit drawing.
 const HALO_N = 256, HALO_SPAN = 140;
-async function haloTexture(markup, rim, rimWidth = 2.1, shadowAlpha = 1) {
+async function haloTexture(markup, rim) {
   const flat = restingArt(markup).replace(/url\([^)]*\)/g, '#000');
   const holder = document.createElement('div');
   holder.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${HALO_N}" height="${HALO_N}" viewBox="-20 -20 140 140">${flat}</svg>`;
@@ -120,7 +119,7 @@ async function haloTexture(markup, rim, rimWidth = 2.1, shadowAlpha = 1) {
     const g = out.getContext('2d');
     // Soft shadow: the silhouette smeared in rings (works without canvas filters).
     for (const [r, a] of [[11, 0.05], [8, 0.07], [5.5, 0.1], [3.5, 0.14]]) {
-      g.globalAlpha = Math.min(1, a * shadowAlpha);
+      g.globalAlpha = a;
       for (let i = 0; i < 12; i++) {
         const ang = (i / 12) * Math.PI * 2;
         g.drawImage(dark, Math.cos(ang) * r + 1.5, Math.sin(ang) * r + 2.5);
@@ -130,7 +129,7 @@ async function haloTexture(markup, rim, rimWidth = 2.1, shadowAlpha = 1) {
     g.globalAlpha = 0.9;
     for (let i = 0; i < 12; i++) {
       const ang = (i / 12) * Math.PI * 2;
-      g.drawImage(pale, Math.cos(ang) * rimWidth, Math.sin(ang) * rimWidth);
+      g.drawImage(pale, Math.cos(ang) * 2.1, Math.sin(ang) * 2.1);
     }
     const tex = new (THREE().CanvasTexture)(out);
     tex.encoding = THREE().sRGBEncoding;
@@ -165,41 +164,18 @@ export class ReliefLayer {
     this.camera = new T.OrthographicCamera(0, 1, 0, -1, -2000, 2000);
     this.camera.position.set(0, 0, 1000);
 
-    const look = style();
-    // The dark style sample is always lit like the night.
-    const night = tone === 'night' || look === 'dark';
-    this.rim = look === 'painted' ? '#f6ecd0' : look === 'dark' ? '#ffb26a' : night ? '#ffe3ae' : '#fff8e6';
-    this.rimWidth = look === 'painted' ? 3.2 : look === 'dark' ? 1.6 : 2.1;
-    this.shadowAlpha = look === 'dark' ? 1.5 : look === 'painted' ? 0.6 : 1;
-    if (look === 'painted') this.renderer.toneMappingExposure = 0.95;
-    if (look === 'dark') this.renderer.toneMappingExposure = 0.8;
+    const night = tone === 'night';
+    this.rim = night ? '#ffe3ae' : '#fff8e6';
     // A soft lighting environment for reflections: warm light from above
     // and the windows, dark wood and stone around.
     this.scene.environment = this.makeEnvironment(night);
-    if (look === 'painted') {
-      // Even, shadowless light, as in a painted miniature.
-      this.scene.add(new T.HemisphereLight('#fff8ea', '#8a7a64', 0.85));
-      const key = new T.DirectionalLight('#fff6e4', 0.75);
-      key.position.set(-0.5, 0.7, 1.4);
-      this.scene.add(key);
-    } else if (look === 'dark') {
-      // Torchlight from one side and a cold rim of moonlight on the edges.
-      this.scene.add(new T.HemisphereLight('#d8b488', '#1a120a', 0.7));
-      const key = new T.DirectionalLight('#ffa048', 1.35);
-      key.position.set(-0.9, 0.5, 0.9);
-      this.scene.add(key);
-      const rim = new T.DirectionalLight('#a8c0ff', 1.1);
-      rim.position.set(0.7, 0.9, -0.35);
-      this.scene.add(rim);
-    } else {
-      this.scene.add(new T.HemisphereLight(night ? '#ffd9a8' : '#fff4dc', night ? '#2a1a10' : '#4a3828', night ? 0.62 : 0.55));
-      const key = new T.DirectionalLight(night ? '#ffc888' : '#fff2d0', night ? 1.12 : 1.0);
-      key.position.set(-0.7, 0.9, 1.1);
-      this.scene.add(key);
-      const fill = new T.DirectionalLight('#c8d8ff', 0.3);
-      fill.position.set(0.9, -0.4, 0.7);
-      this.scene.add(fill);
-    }
+    this.scene.add(new T.HemisphereLight(night ? '#ffd9a8' : '#fff4dc', night ? '#2a1a10' : '#4a3828', night ? 0.62 : 0.55));
+    const key = new T.DirectionalLight(night ? '#ffc888' : '#fff2d0', night ? 1.12 : 1.0);
+    key.position.set(-0.7, 0.9, 1.1);
+    this.scene.add(key);
+    const fill = new T.DirectionalLight('#c8d8ff', 0.3);
+    fill.position.set(0.9, -0.4, 0.7);
+    this.scene.add(fill);
 
     this.glowTex = radialTexture('rgba(255,226,120,0.7)', 'rgba(255,226,120,0)');
     this.shadowTex = radialTexture('rgba(20,10,0,0.55)', 'rgba(20,10,0,0)');
@@ -277,7 +253,7 @@ export class ReliefLayer {
     holder.add(shadow, glow, halo, tilt);
     this.scene.add(holder);
     const entry = { item, holder, tilt, anim, model, glow, shadow, halo, lift: 0, base: { x: item.x, y: item.y } };
-    haloTexture(markup, this.rim, this.rimWidth, this.shadowAlpha).then((tex) => {
+    haloTexture(markup, this.rim).then((tex) => {
       if (!this.items.has(item.id)) return;
       halo.material.map = tex;
       halo.material.opacity = 1;

@@ -2,15 +2,12 @@
 // `back` is drawn under the hidden items, `front` over them (to half-hide a few).
 import { P } from '../art/defs.js';
 import * as S from '../art/scenery.js';
-import * as ST from '../art/styles.js';
 
 export const SCENE_W = 1600;
 export const SCENE_H = 1000;
 
-function scriptorium(look = 'classic') {
+function scriptorium() {
   const r = S.rng(11);
-  if (look === 'painted') return paintedScriptorium(r);
-  if (look === 'dark') return darkScriptorium(r);
   const back = `
     ${S.wall('url(#sc-stone-warm)', 760, 'url(#sc-tiles)')}
     ${S.vault(150, 200, 100)}
@@ -33,58 +30,6 @@ function scriptorium(look = 'classic') {
     ${S.spellWisp('M60,720 C280,560 520,760 760,620 S1200,540 1540,690')}
     ${S.spellMotes(r, 28, 40, 1560, 170, 760)}`;
   const front = `${S.page(600, 905, 18, P.lapis)}${S.pageBorder(S.rng(5))}`;
-  return { back, front };
-}
-
-// Style sample: the Scriptorium as a miniature in a Book of Hours. No cast
-// light or shadow; a diapered gold-and-blue backdrop and a tiled floor.
-function paintedScriptorium(r) {
-  const back = `
-    ${S.wall('url(#pt-diaper)', 760, 'url(#pt-chequer)')}
-    ${S.vault(150, 200, 100)}
-    ${S.archWindow(170, 130, 180, 420)}
-    ${S.archWindow(1250, 130, 180, 420)}
-    ${S.banner(430, 40, 90, 280, P.vermilion, 'mm-diaper-red')}
-    ${S.banner(1115, 40, 90, 260, P.lapis, 'mm-diaper-blue')}
-    ${S.bookcase(560, 140, 480, 600, 4, r, [[0, 300, 4], [1, 0, 2], [2, 220, 3], [3, 330, 3]])}
-    ${S.lectern(1090, 500)}
-    ${S.desk(190, 560)}
-    ${S.floorClutter(r, 60, 1520, 790, 950, 16)}
-    ${S.stool(500, 800, -75)}
-    ${S.inkpot(560, 820, true)}
-    ${S.bookPile(1240, 920, r, 3)}
-    ${S.spellWisp('M60,720 C280,560 520,760 760,620 S1200,540 1540,690', '#c53a2a')}`;
-  const front = `${S.page(600, 905, 18, P.lapis)}${ST.paintedBorder()}`;
-  return { back, front };
-}
-
-// Style sample: the Scriptorium at night, rough and neglected, lit by torches.
-const DARK_TORCHES = [[475, 440], [1160, 440]];
-function darkScriptorium(r) {
-  const back = `
-    ${S.wall('url(#dk-stone)', 760, 'url(#dk-flags)')}
-    ${S.vault(150, 200, 100)}
-    ${S.archWindow(170, 130, 180, 420, true)}
-    ${S.archWindow(1250, 130, 180, 420, true)}
-    <path d="M190,560 L340,560 L520,1000 L240,1000 Z" fill="url(#dk-moonbeam)"/>
-    <path d="M1270,560 L1420,560 L1320,1000 L1060,1000 Z" fill="url(#dk-moonbeam)"/>
-    ${ST.tatteredBanner(430, 40, 90, 280, '#5a1a14', '#8a6a2a')}
-    ${ST.tatteredBanner(1115, 40, 90, 260, '#1a2448', '#8a6a2a')}
-    ${S.bookcase(560, 140, 480, 600, 4, r, [[0, 300, 4], [1, 0, 2], [2, 220, 3], [3, 330, 3]])}
-    ${S.lectern(1090, 500)}
-    ${S.desk(190, 560)}
-    ${S.floorClutter(r, 60, 1520, 790, 950, 16)}
-    ${S.stool(500, 800, -75)}
-    ${S.inkpot(560, 820, true)}
-    ${S.bookPile(1240, 920, r, 3)}
-    ${S.cobweb(24, 24, 170)}${S.cobweb(1576, 24, 170, true)}${S.cobweb(560, 140, 90)}${S.cobweb(1040, 140, 90, true)}${S.cobweb(24, 750, 110, false, true)}
-    <rect x="0" y="0" width="1600" height="1000" fill="url(#sc-ceiling-shadow)"/>
-    ${S.spellWisp('M60,720 C280,560 520,760 760,620 S1200,540 1540,690', '#8ef0b8')}`;
-  const front = `
-    ${DARK_TORCHES.map(([x, y], i) => ST.darkTorch(x, y, i * 0.5)).join('')}
-    ${ST.darkAtmosphere([...DARK_TORCHES.map(([x, y]) => [x, y - 40, 260]), [300, 560, 150]])}
-    ${S.page(600, 905, 18, '#1a2448')}
-    <rect x="0" y="0" width="1600" height="1000" fill="url(#sc-vignette)"/>`;
   return { back, front };
 }
 
@@ -173,13 +118,6 @@ export const ROOMS = [
       lights: [[260, 360, 420, '255,243,208', 0.32], [1340, 360, 420, '255,243,208', 0.3], [800, 500, 700, '255,236,200', 0.12]],
       shafts: [[[[195, 560], [345, 560], [560, 1000], [255, 1000]]], [[[1255, 560], [1425, 560], [1310, 1000], [1040, 1000]]]],
       vignette: 0.45,
-    },
-    // Light for the dark style sample: torches, the desk candle, the moon.
-    darkRealism: {
-      floorY: 760,
-      lights: [[475, 400, 520, '255,150,60', 0.6], [1160, 400, 520, '255,150,60', 0.55], [300, 580, 240, '255,170,80', 0.5], [260, 360, 300, '150,175,255', 0.3], [1340, 360, 300, '150,175,255', 0.28], [800, 900, 600, '255,140,60', 0.15]],
-      shafts: [],
-      vignette: 0.9,
     },
     scene: scriptorium,
     // Other places where escaped illustrations can end up when moved.

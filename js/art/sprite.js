@@ -6,7 +6,6 @@ import { sceneDefs } from './scenery.js';
 import { shadingDefs, shade } from './shading.js';
 import { bookCover, BOOKS, witchDefs } from './ornaments.js';
 import { villainDefs } from './villains.js';
-import { styleDefs } from './styles.js';
 import { ITEMS } from '../data/items.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -17,10 +16,8 @@ export function restingArt(markup) {
   return markup.replace(/<g data-part="[^"]*" data-pivot="[^"]*" data-rest="hidden">[\s\S]*?<\/g>/g, '');
 }
 
-export function mountSprite({ replace = false } = {}) {
-  const old = document.getElementById('mm-sprite');
-  if (old && !replace) return;
-  old?.remove();
+export function mountSprite() {
+  if (document.getElementById('mm-sprite')) return;
   const symbols = [];
   for (const it of ITEMS) {
     symbols.push(`<symbol id="item-${it.id}" viewBox="0 0 100 100">${shade(restingArt(it.draw()))}</symbol>`);
@@ -43,7 +40,7 @@ export function mountSprite({ replace = false } = {}) {
   svg.setAttribute('style', 'position:absolute;width:0;height:0;overflow:hidden');
   // The witch, owl and broom gradients live here, once: a second copy inside a
   // hidden screen would win the id lookup and leave the villains colourless.
-  svg.innerHTML = defsMarkup() + sceneDefs() + shadingDefs() + villainDefs() + witchDefs() + styleDefs() + symbols.join('') + extraSymbols();
+  svg.innerHTML = defsMarkup() + sceneDefs() + shadingDefs() + villainDefs() + witchDefs() + symbols.join('') + extraSymbols();
   document.body.prepend(svg);
 }
 

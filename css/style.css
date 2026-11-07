@@ -556,37 +556,3 @@ h1, h2, h3 {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
-
-/* ---------- style sample: dark (torchlight and fog) ---------- */
-.dk-flicker { animation: dk-flicker 2.3s infinite; }
-@keyframes dk-flicker {
-  0%, 100% { opacity: 0.9; } 12% { opacity: 0.7; } 20% { opacity: 1; } 34% { opacity: 0.78; }
-  48% { opacity: 0.95; } 61% { opacity: 0.72; } 77% { opacity: 1; } 88% { opacity: 0.82; }
-}
-.dk-flame { animation: dk-flame 0.9s ease-in-out infinite alternate; }
-@keyframes dk-flame { 0% { transform: scale(1, 1) skewX(0deg); } 40% { transform: scale(0.94, 1.08) skewX(3deg); } 100% { transform: scale(1.05, 0.95) skewX(-3deg); } }
-.dk-fogbank { animation: dk-fog 26s linear infinite alternate; }
-@keyframes dk-fog { from { transform: translateX(0); } to { transform: translateX(-420px); } }
-@media (prefers-reduced-motion: reduce) { .dk-flicker, .dk-flame, .dk-fogbank { animation: none; } }
-
-/* ---------- style sample picker (sample builds only) ---------- */
-.style-pick {
-  position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 5;
-  display: flex; align-items: center; gap: 6px; padding: 6px 8px;
-  background: rgba(30, 18, 10, 0.82); border: 1px solid #c9a227; border-radius: 999px;
-  color: #f1dfa0; font-size: 0.82rem; white-space: nowrap;
-}
-.style-pick span { padding: 0 4px; }
-.style-pick button {
-  font: inherit; color: #f1dfa0; background: transparent; border: 1px solid #8a6a2a;
-  border-radius: 999px; padding: 4px 10px; min-height: 32px; cursor: pointer; touch-action: manipulation;
-}
-.style-pick button[aria-pressed="true"] { background: #c9a227; color: #2a1a0e; border-color: #c9a227; }
-
-/* ---------- style sample: dark — iron and soot instead of vellum ---------- */
-[data-style="dark"] .hud, [data-style="dark"] .bookbar { background: #1c1612; border-color: #6a5228; color: #e8d6ae; }
-[data-style="dark"] .room-name { color: #e0a24a; }
-[data-style="dark"] .timer, [data-style="dark"] .book-label, [data-style="dark"] .count { color: #e8d6ae; }
-[data-style="dark"] .scene-wrap { background: #0e0b09; }
-/* Dark-style villains carry a faint witch-light, so they stay easy to spot and tap. */
-[data-style="dark"] .actors { filter: drop-shadow(0 0 5px rgba(170, 255, 120, 0.6)); }
