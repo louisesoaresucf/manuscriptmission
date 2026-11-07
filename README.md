@@ -119,5 +119,6 @@ Earlier versions are kept as branches so they can be compared with the newest on
 |---|---|---|
 | `control-v1` | 1 | Flat illustrations, the first cartoon witch |
 | `control-v2` | 3 | 3D objects, the witch with her broom and owl, the estampie music. A frozen playable copy is at https://claude.ai/artifact/JWCAf4cVaLW1nyM5kYUy51 (private to the owner unless shared). |
+| `control-v3` | 5 | The manuscript storybook, a movement for every object, realistic lighting, and the v5 fixes (villain colours, the new rose, clearer objects). A frozen playable copy is at https://claude.ai/artifact/PW4Lti2Tbs1ggSbpoAjoRE (private to the owner unless shared). |
 
 On GitHub, open **Compare** and pick a control branch against `main` to see every change since then.
