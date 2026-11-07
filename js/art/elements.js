@@ -266,14 +266,22 @@ export function sun() {
 
 export function lightning() {
   return `
-  ${halo(50, 50, 40)}
-  <g ${OUTLINE} stroke-width="2.2">
-    <path d="M58,6 L28,52 L46,52 L36,94 L74,40 L55,40 L68,6 Z" fill="${P.gold}"/>
+  <!-- a dark storm cloud with a moonlit rim, so the bolt stands out on any wall -->
+  <g ${OUTLINE} stroke-width="2">
+    <path d="M14,30 C8,30 6,22 12,19 C11,12 19,8 25,11 C28,4 40,3 44,9 C49,3 61,4 63,11 C69,7 80,10 80,18 C88,18 92,27 85,31 C84,35 78,36 74,34 L22,34 C18,35 14,34 14,30 Z" fill="#2c3550"/>
   </g>
-  <path d="M60,12 L40,46 L52,46 L45,76" fill="none" stroke="${P.vermilion}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M57,10 L34,47" ${HILITE} stroke-width="1.4"/>
+  <path d="M15,22 C14,16 20,13 25,15 M28,10 C31,6 39,5 43,10 M48,9 C52,5 60,6 62,12 M66,12 C71,10 78,13 78,18" fill="none" stroke="#c9d6f2" stroke-width="2" stroke-linecap="round"/>
+  <path d="M20,30 C34,32 60,32 80,29" fill="none" stroke="#1a2036" stroke-width="1.4" stroke-linecap="round"/>
+  <!-- the bolt: gold edges round a white-hot core -->
+  <g ${OUTLINE} stroke-width="2.2" stroke-linejoin="round">
+    <path d="M56,28 L30,60 L46,60 L36,96 L74,50 L56,50 L66,28 Z" fill="#ffbf1f"/>
+  </g>
+  <path d="M58,33 L39,57 L51,57 L44,80 L65,53 L52,53 L60,33 Z" fill="#fffbe0"/>
   <!-- sparks -->
-  <g stroke="${P.vermilion}" stroke-width="1.8" stroke-linecap="round">
-    <path d="M20,40 l-6,-2 M18,48 l-6,2 M80,52 l6,-1 M78,60 l6,3 M30,80 l-5,3 M66,72 l5,4"/>
+  <g stroke="#ffbf1f" stroke-width="2.2" stroke-linecap="round">
+    <path d="M22,54 l-7,-2 M22,64 l-7,3 M80,58 l7,-1 M78,68 l6,4 M30,88 l-5,4 M64,80 l5,5"/>
+  </g>
+  <g stroke="${P.ink}" stroke-width="0.8" stroke-linecap="round" opacity="0.5">
+    <path d="M22,54 l-7,-2 M22,64 l-7,3 M80,58 l7,-1 M78,68 l6,4 M30,88 l-5,4 M64,80 l5,5"/>
   </g>`;
 }

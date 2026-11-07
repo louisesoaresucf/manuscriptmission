@@ -2,6 +2,7 @@
 // its front scenery, kept exactly in step with the 2D pan and zoom.
 import { buildRelief, resetModels } from './relief.js';
 import { REACTIONS, reactionFor } from './reactions.js';
+import { restingArt } from '../art/sprite.js';
 
 const THREE = () => window.THREE;
 
@@ -81,6 +82,63 @@ function particleTexture(type, colour) {
   textures.set(key, tex);
   return tex;
 }
+
+// A halo that follows the item's own outline: a thin pale rim and a soft
+// dark shadow, so every object reads as a loose thing resting in front of
+// the scenery, on a dark window as well as a pale wall. The plane covers
+// 140 scene units round the 100-unit drawing.
+const HALO_N = 256, HALO_SPAN = 140;
+async function haloTexture(markup, rim) {
+  const flat = restingArt(markup).replace(/url\([^)]*\)/g, '#000');
+  const holder = document.createElement('div');
+  holder.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${HALO_N}" height="${HALO_N}" viewBox="-20 -20 140 140">${flat}</svg>`;
+  const xml = new XMLSerializer().serializeToString(holder.firstElementChild);
+  const url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml' }));
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const sil = document.createElement('canvas');
+    sil.width = sil.height = HALO_N;
+    const sg = sil.getContext('2d');
+    sg.drawImage(img, 0, 0, HALO_N, HALO_N);
+    sg.globalCompositeOperation = 'source-in';
+    const tinted = (colour) => {
+      const c = document.createElement('canvas');
+      c.width = c.height = HALO_N;
+      const g = c.getContext('2d');
+      g.drawImage(sil, 0, 0);
+      g.globalCompositeOperation = 'source-in';
+      g.fillStyle = colour;
+      g.fillRect(0, 0, HALO_N, HALO_N);
+      return c;
+    };
+    const dark = tinted('#140a02'), pale = tinted(rim);
+    const out = document.createElement('canvas');
+    out.width = out.height = HALO_N;
+    const g = out.getContext('2d');
+    // Soft shadow: the silhouette smeared in rings (works without canvas filters).
+    for (const [r, a] of [[11, 0.05], [8, 0.07], [5.5, 0.1], [3.5, 0.14]]) {
+      g.globalAlpha = a;
+      for (let i = 0; i < 12; i++) {
+        const ang = (i / 12) * Math.PI * 2;
+        g.drawImage(dark, Math.cos(ang) * r + 1.5, Math.sin(ang) * r + 2.5);
+      }
+    }
+    // Thin pale rim hugging the outline.
+    g.globalAlpha = 0.9;
+    for (let i = 0; i < 12; i++) {
+      const ang = (i / 12) * Math.PI * 2;
+      g.drawImage(pale, Math.cos(ang) * 2.1, Math.sin(ang) * 2.1);
+    }
+    const tex = new (THREE().CanvasTexture)(out);
+    tex.encoding = THREE().sRGBEncoding;
+    return tex;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 const ADDITIVE = new Set(['spark', 'flame', 'star']);
 
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
@@ -107,11 +165,12 @@ export class ReliefLayer {
     this.camera.position.set(0, 0, 1000);
 
     const night = tone === 'night';
+    this.rim = night ? '#ffe3ae' : '#fff8e6';
     // A soft lighting environment for reflections: warm light from above
     // and the windows, dark wood and stone around.
     this.scene.environment = this.makeEnvironment(night);
-    this.scene.add(new T.HemisphereLight(night ? '#ffd9a8' : '#fff4dc', night ? '#2a1a10' : '#4a3828', night ? 0.5 : 0.55));
-    const key = new T.DirectionalLight(night ? '#ffc070' : '#fff2d0', night ? 0.95 : 1.0);
+    this.scene.add(new T.HemisphereLight(night ? '#ffd9a8' : '#fff4dc', night ? '#2a1a10' : '#4a3828', night ? 0.62 : 0.55));
+    const key = new T.DirectionalLight(night ? '#ffc888' : '#fff2d0', night ? 1.12 : 1.0);
     key.position.set(-0.7, 0.9, 1.1);
     this.scene.add(key);
     const fill = new T.DirectionalLight('#c8d8ff', 0.3);
@@ -188,9 +247,19 @@ export class ReliefLayer {
     glow.scale.set(135, 135, 1);
     glow.position.z = -25;
     glow.visible = false;
-    holder.add(shadow, glow, tilt);
+    const halo = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ transparent: true, depthWrite: false, opacity: 0 }));
+    halo.scale.set(HALO_SPAN, HALO_SPAN, 1);
+    halo.position.z = -20;
+    holder.add(shadow, glow, halo, tilt);
     this.scene.add(holder);
-    const entry = { item, holder, tilt, anim, model, glow, shadow, lift: 0, base: { x: item.x, y: item.y } };
+    const entry = { item, holder, tilt, anim, model, glow, shadow, halo, lift: 0, base: { x: item.x, y: item.y } };
+    haloTexture(markup, this.rim).then((tex) => {
+      if (!this.items.has(item.id)) return;
+      halo.material.map = tex;
+      halo.material.opacity = 1;
+      halo.material.needsUpdate = true;
+      this.invalidate();
+    }).catch(() => {});
     this.items.set(item.id, entry);
     this.place(entry);
     this.invalidate();
@@ -218,6 +287,7 @@ export class ReliefLayer {
     if (on) this.selected = id;
     else if (this.selected === id) this.selected = null;
     e.glow.visible = on;
+    e.halo.visible = !on;
     this.tween(e, 220, (t) => { e.lift = on ? easeOut(t) : 1 - easeOut(t); this.place(e); }, () => {
       if (!on) { e.anim.rotation.set(0, 0, 0); }
     });

@@ -216,19 +216,6 @@
 }
 .clasp.c1 { top: 28%; } .clasp.c2 { top: 65%; }
 .unclasp .clasp { transform: translateX(40%) rotate(-30deg); opacity: 0; }
-.cover-hint {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2.4%;
-  margin: 0;
-  text-align: center;
-  font-style: italic;
-  font-size: calc(var(--pw) / 26);
-  color: #f1dfa0;
-  animation: hint-pulse 2.2s ease-in-out infinite;
-}
-@keyframes hint-pulse { 50% { opacity: 0.45; } }
 .cover .face.back .page { border-radius: 8px 2px 2px 8px; }
 
 /* ---------- collection pages ---------- */

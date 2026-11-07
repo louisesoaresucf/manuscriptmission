@@ -28,11 +28,14 @@ const BASE = process.env.BASE_URL || 'http://localhost:8765';
       label: document.getElementById('book-next').textContent,
       prevHidden: document.getElementById('book-prev').hidden,
       opened: document.getElementById('codex').classList.contains('unclasp'),
+      // The closed book offers one way in: the button, with no second prompt on the cover.
+      prompts: [...document.querySelectorAll('#screen-book button:not([hidden]), #codex .cover-hint')].length,
     }));
 
     let s = await info();
     if (s.mode !== mode) fail(`${name}: expected ${mode} layout, got ${s.mode}`);
     if (s.label !== 'Open the manuscript' || !s.prevHidden) fail(`${name}: closed book shows the wrong controls`);
+    if (s.prompts !== 1) fail(`${name}: closed book shows ${s.prompts} prompts to open it, expected 1`);
 
     // Open the cover and turn every page.
     await click('#book-next');
